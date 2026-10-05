@@ -9,6 +9,8 @@ from robyn.responses import FileResponse
 
 from exchange import dispatch
 from models import ApiResponse
+from br_rate import get_brl_rate
+from tax_rules import get_tax_rules
 
 ROOT = Path(__file__).parent
 
@@ -48,6 +50,27 @@ async def rate_endpoint(request: Request) -> Response:
     base = request.query_params.get("base", "") or ""
     quote = request.query_params.get("quote", "") or ""
     return json_response(*await dispatch("rate", base, quote))
+
+
+@app.get("/api/br/rate")
+async def br_rate_endpoint(request: Request) -> Response:
+    try:
+        return json_response(await get_brl_rate(request.query_params.get("base", "") or ""))
+    except ValueError:
+        from models import ErrorResponse
+        return json_response(ErrorResponse(error="invalid_currency"), 400)
+    except Exception:
+        from models import ErrorResponse
+        return json_response(ErrorResponse(error="rate_unavailable"), 503)
+
+
+@app.get("/api/br/tax-rules")
+async def tax_rules_endpoint(request: Request) -> Response:
+    try:
+        return json_response(await get_tax_rules(int(request.query_params.get("year", "2026"))))
+    except (ValueError, TypeError):
+        from models import ErrorResponse
+        return json_response(ErrorResponse(error="rules_unavailable"), 400)
 
 
 if __name__ == "__main__":

@@ -6,6 +6,8 @@ from urllib.parse import parse_qs
 
 from exchange import dispatch
 from models import ErrorResponse
+from br_rate import get_brl_rate
+from tax_rules import get_tax_rules
 
 
 async def app(
@@ -27,11 +29,23 @@ async def app(
         params = parse_qs(
             query.decode("utf-8", errors="replace") if isinstance(query, bytes) else ""
         )
-        payload, status = await dispatch(
-            params.get("resource", [""])[0],
-            params.get("base", [""])[0],
-            params.get("quote", [""])[0],
-        )
+        resource = params.get("resource", [""])[0]
+        if resource == "br_rate":
+            try:
+                payload, status = await get_brl_rate(params.get("base", [""])[0]), 200
+            except ValueError:
+                payload, status = ErrorResponse(error="invalid_currency"), 400
+            except Exception:
+                payload, status = ErrorResponse(error="rate_unavailable"), 503
+        elif resource == "tax_rules":
+            try:
+                payload, status = await get_tax_rules(int(params.get("year", ["2026"])[0])), 200
+            except (ValueError, TypeError):
+                payload, status = ErrorResponse(error="rules_unavailable"), 400
+        else:
+            payload, status = await dispatch(
+                resource, params.get("base", [""])[0], params.get("quote", [""])[0]
+            )
     await send({"type": "http.response.start", "status": status, "headers": headers})
     await send(
         {

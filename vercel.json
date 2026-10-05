@@ -12,6 +12,8 @@
   "rewrites": [
     { "source": "/api/currencies", "destination": "/api/index?resource=currencies" },
     { "source": "/api/rate", "destination": "/api/index?resource=rate" },
+    { "source": "/api/br/rate", "destination": "/api/index?resource=br_rate" },
+    { "source": "/api/br/tax-rules", "destination": "/api/index?resource=tax_rules" },
     { "source": "/static/:path*", "destination": "/:path*" }
   ],
   "headers": [{

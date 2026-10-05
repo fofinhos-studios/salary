@@ -46,7 +46,7 @@ class Rate(BaseModel):
     quote: Code
     rate: PositiveRate
     date: str | None
-    source: Literal["Frankfurter", "identity"]
+    source: Literal["Frankfurter", "BCB", "identity"]
     stale: bool
     max_age: Annotated[int, Field(ge=0)]
 
@@ -77,7 +77,29 @@ class ErrorResponse(BaseModel):
         "invalid_currency",
         "provider_unavailable",
         "rate_unavailable",
+        "rules_unavailable",
     ]
 
 
-ApiResponse = CurrenciesResponse | Rate | ErrorResponse
+class TaxRules(BaseModel):
+    model_config = ConfigDict(strict=True, extra="forbid")
+
+    year: Literal[2026]
+    valid_from: str
+    checked_at: str
+    source: Literal["official_snapshot", "official_snapshot_with_api"]
+    inss_employee: list[tuple[float, float]]
+    inss_ceiling: float
+    minimum_wage: float
+    ir_monthly: list[tuple[float, float, float]]
+    ir_annual: list[tuple[float, float, float]]
+    plr: list[tuple[float, float, float]]
+    dependent_monthly: float
+    dependent_annual: float
+    simplified_monthly: float
+    simplified_annual: float
+    education_annual: float
+    sources: dict[str, str]
+
+
+ApiResponse = CurrenciesResponse | Rate | TaxRules | ErrorResponse
