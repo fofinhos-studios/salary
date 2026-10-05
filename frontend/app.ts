@@ -2,6 +2,7 @@ import { amount, calculate, changePeriod, formatSalaryText, money, parseAmount, 
 import { messages, type Language, type MessageKey } from "./i18n";
 import { flagFor } from "./flags";
 import { currenciesResponseSchema, rateSchema, type Currency, type Rate } from "./contracts";
+import { mountCompare } from "./compare";
 
 function $<T extends HTMLElement = HTMLElement>(id: string): T {
   const element = document.getElementById(id);
@@ -27,6 +28,7 @@ let activeOption = -1;
 let visibleCurrencies: Currency[] = [];
 let displayNames: Intl.DisplayNames;
 let currencyNames = new Map<string, string>();
+let compare: ReturnType<typeof mountCompare> | undefined;
 const locale = (): string => language === "pt" ? "pt-BR" : "en-US";
 const t = (key: MessageKey): string => messages[language][key];
 const currencyName = (code: string): string => currencyNames.get(code) || code;
@@ -59,6 +61,7 @@ function setLanguage(): void {
   $("period-control").setAttribute("aria-label", t("salaryPeriod"));
   $("target-period-control").setAttribute("aria-label", t("targetPeriod"));
   $("mode-control").setAttribute("aria-label", t("rateMode"));
+  $("calculator-tabs").setAttribute("aria-label", t("calculatorTabs"));
   rebuildNames();
   for (const side of ["source", "target"] as const) {
     $<HTMLInputElement>(`${side}-search`).placeholder = t("search");
@@ -68,6 +71,7 @@ function setLanguage(): void {
   if (state.value !== null) salaryField(state.editedSide).value = amount(state.value, state[state.editedSide], locale());
   if (state.hoursPerWeek !== null) $<HTMLInputElement>("hours-per-week").value = formatRate(state.hoursPerWeek);
   if (state.manual !== null) $<HTMLInputElement>("manual-rate").value = formatRate(state.manual);
+  compare?.setLanguage();
   render();
 }
 
@@ -212,6 +216,7 @@ async function fetchCurrencies() {
     rebuildNames();
     renderCurrency("source");
     renderCurrency("target");
+    compare?.refreshCurrencies();
     if (openSide) filterCurrencies();
   } catch { catalogueFailed = true; }
   finally { $<HTMLButtonElement>("retry-currencies").disabled = false; render(); }
@@ -384,6 +389,30 @@ $("retry-rate").addEventListener("click", () => fetchRate(true));
 $("retry-currencies").addEventListener("click", fetchCurrencies);
 document.addEventListener("visibilitychange", () => { if (!document.hidden && state.mode === "auto" && Date.now() >= state.expires) fetchRate(); });
 window.addEventListener("focus", () => { if (state.mode === "auto" && Date.now() >= state.expires) fetchRate(); });
+compare = mountCompare(() => language, () => currencies);
+const tabs = ["convert", "compare"] as const;
+function selectTab(tab: typeof tabs[number], focus = false) {
+  closeMenu();
+  for (const name of tabs) {
+    const selected = name === tab;
+    const button = $<HTMLButtonElement>(`tab-${name}`);
+    button.setAttribute("aria-selected", String(selected));
+    button.tabIndex = selected ? 0 : -1;
+    $(`${name}-panel`).hidden = !selected;
+  }
+  if (focus) $(`tab-${tab}`).focus();
+  if (tab === "compare") compare?.activate();
+}
+for (const tab of tabs) {
+  $(`tab-${tab}`).addEventListener("click", () => selectTab(tab));
+  $(`tab-${tab}`).addEventListener("keydown", event => {
+    const index = tabs.indexOf(tab);
+    const next = event.key === "ArrowRight" ? tabs[(index + 1) % tabs.length]
+      : event.key === "ArrowLeft" ? tabs[(index + tabs.length - 1) % tabs.length]
+      : event.key === "Home" ? tabs[0] : event.key === "End" ? tabs[tabs.length - 1] : null;
+    if (next) { event.preventDefault(); selectTab(next, true); }
+  });
+}
 setLanguage();
 fetchCurrencies();
 fetchRate();

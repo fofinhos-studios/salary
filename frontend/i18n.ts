@@ -1,6 +1,12 @@
 export const messages = {
   en: {
     skip: "Skip to calculator", tagline: "salary & currency calculator", language: "Language",
+    convertTab: "Convert", compareTab: "Compare", calculatorTabs: "Calculator views",
+    salaryA: "Salary A", salaryB: "Salary B", currency: "Currency", sameCurrencies: "Same currency", differentCurrencies: "Different currencies",
+    currencyMode: "Comparison currencies", reverseSalaries: "Reverse salaries", annualDifference: "Annual difference",
+    monthlyDifference: "Monthly payment difference", hourlyDifference: "Hourly difference", annualIncrease: "Annual increase",
+    annualDecrease: "Annual decrease", noChange: "No annual change", percentageUnavailable: "Percentage unavailable with a zero baseline",
+    compareEmpty: "Enter both salaries to compare them.", compareUnavailable: "Comparison unavailable.", compareResult: "Salary comparison",
     sourceTitle: "Salary", targetTitle: "Equivalent", sourceCurrency: "From", targetCurrency: "To", swapCurrencies: "Swap currencies",
     salaryLabel: "Amount", hourly: "Hourly", monthly: "Monthly", annual: "Annual", thirteenth: "Include 13th payment",
     hoursPerWeek: "Hours per week", invalidHours: "Enter valid hours per week greater than zero.", hourlyNoThirteenth: "Not applied to hourly pay",
@@ -18,6 +24,12 @@ export const messages = {
   },
   pt: {
     skip: "Ir para a calculadora", tagline: "calculadora de salário e câmbio", language: "Idioma",
+    convertTab: "Converter", compareTab: "Comparar", calculatorTabs: "Modos da calculadora",
+    salaryA: "Salário A", salaryB: "Salário B", currency: "Moeda", sameCurrencies: "Mesma moeda", differentCurrencies: "Moedas diferentes",
+    currencyMode: "Moedas da comparação", reverseSalaries: "Inverter salários", annualDifference: "Diferença anual",
+    monthlyDifference: "Diferença por pagamento mensal", hourlyDifference: "Diferença por hora", annualIncrease: "Aumento anual",
+    annualDecrease: "Redução anual", noChange: "Sem mudança anual", percentageUnavailable: "Percentual indisponível com base zero",
+    compareEmpty: "Informe os dois salários para compará-los.", compareUnavailable: "Comparação indisponível.", compareResult: "Comparação salarial",
     sourceTitle: "Salário", targetTitle: "Equivalente", sourceCurrency: "De", targetCurrency: "Para", swapCurrencies: "Inverter moedas",
     salaryLabel: "Valor", hourly: "Por hora", monthly: "Mensal", annual: "Anual", thirteenth: "Incluir 13º salário",
     hoursPerWeek: "Horas por semana", invalidHours: "Informe horas semanais válidas, maiores que zero.", hourlyNoThirteenth: "Não aplicado ao valor por hora",

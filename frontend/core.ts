@@ -2,6 +2,8 @@ export type Period = "hourly" | "monthly" | "annual";
 export type Payments = 12 | 13;
 export type Side = "source" | "target";
 export type Calculation = { sourceAnnual: number; annual: number; monthly: number; hourly: number };
+export type Difference = { inA: number; inB: number };
+export type Comparison = { annual: Difference; monthly: Difference; hourly: Difference; percent: number | null };
 
 export function parseAmount(text: string, locale: string): number | null {
   const value = text.trim();
@@ -42,6 +44,21 @@ export function calculate(value: number | null, period: string, sourcePayments: 
   const hourly = annual / annualHours;
   if (![sourceAnnual, annual, monthly, hourly].every(n => Number.isFinite(n) && n <= Number.MAX_SAFE_INTEGER)) return null;
   return { sourceAnnual, annual, monthly, hourly };
+}
+
+export function compareSalaries(a: Calculation | null, b: Calculation | null, rate: number | null): Comparison | null {
+  if (!a || !b || rate === null || !Number.isFinite(rate) || rate <= 0) return null;
+  const difference = (period: "annual" | "monthly" | "hourly"): Difference => ({
+    inA: b[period] / rate - a[period],
+    inB: b[period] - a[period] * rate,
+  });
+  const annual = difference("annual");
+  const monthly = difference("monthly");
+  const hourly = difference("hourly");
+  const percent = a.annual === 0 ? null : annual.inA / a.annual * 100;
+  if (![annual.inA, annual.inB, monthly.inA, monthly.inB, hourly.inA, hourly.inB, percent ?? 0]
+    .every(value => Number.isFinite(value) && Math.abs(value) <= Number.MAX_SAFE_INTEGER)) return null;
+  return { annual, monthly, hourly, percent };
 }
 
 export function changePeriod(value: number | null, current: Period, next: Period, payments: Payments, hoursPerWeek = 40): number | null {

@@ -3,7 +3,7 @@ import { test } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
-import { amount, calculate, changePeriod, formatSalaryText, money, parseAmount, searchKey } from "../frontend/core.ts";
+import { amount, calculate, changePeriod, compareSalaries, formatSalaryText, money, parseAmount, searchKey } from "../frontend/core.ts";
 import { flagFor } from "../frontend/flags.ts";
 
 test("annual and monthly inputs preserve the annual total across all 12/13 combinations", () => {
@@ -74,6 +74,20 @@ test("manual rates, identity rates and zero salary", () => {
   assert.deepEqual(calculate(1000, "monthly", 13, 12, 2.5), { sourceAnnual: 13000, annual: 32500, monthly: 32500 / 12, hourly: 32500 / 2080 });
   assert.equal(calculate(1000, "monthly", 12, 12, 1).monthly, 1000);
   assert.deepEqual(calculate(0, "annual", 12, 13, 5), { sourceAnnual: 0, annual: 0, monthly: 0, hourly: 0 });
+});
+
+test("salary comparison uses annual, payment, and each job's hourly basis", () => {
+  const a = calculate(120000, "annual", 12, 12, 1, 40);
+  const b = calculate(750000, "annual", 13, 13, 1, 20);
+  const result = compareSalaries(a, b, 5);
+  assert.equal(result.percent, 25);
+  assert.equal(result.annual.inA, 30000);
+  assert.equal(result.annual.inB, 150000);
+  assert.ok(Math.abs(result.monthly.inA - (750000 / 13 / 5 - 10000)) < 1e-8);
+  assert.ok(Math.abs(result.hourly.inA - (750000 / 1040 / 5 - 120000 / 2080)) < 1e-8);
+  assert.equal(compareSalaries(calculate(0, "annual", 12, 12, 1), b, 5).percent, null);
+  assert.equal(compareSalaries(a, b, 0), null);
+  assert.equal(compareSalaries(a, b, 1e-300), null);
 });
 
 test("locale parsing accepts decimals and grouping without guessing ambiguous inputs", () => {

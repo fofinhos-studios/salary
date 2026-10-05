@@ -13,7 +13,7 @@
     <script type="module" src="/static/app.mjs"></script>
   </head>
   <body>
-    <a class="skip" href="#salary" data-i18n="skip">Skip to calculator</a>
+    <a class="skip" href="#calculator" data-i18n="skip">Skip to calculator</a>
     <div class="page">
       <header class="header">
         <a class="brand" href="/" aria-label="Tiny Salary">
@@ -26,6 +26,11 @@
 
       <main id="calculator">
         <noscript><p class="notice">Enable JavaScript to use the calculator. Ative o JavaScript para usar a calculadora.</p></noscript>
+        <div class="tabs" role="tablist" aria-label="Calculator views" id="calculator-tabs">
+          <button type="button" role="tab" id="tab-convert" aria-controls="convert-panel" aria-selected="true" tabindex="0" data-i18n="convertTab">Convert</button>
+          <button type="button" role="tab" id="tab-compare" aria-controls="compare-panel" aria-selected="false" tabindex="-1" data-i18n="compareTab">Compare</button>
+        </div>
+        <div id="convert-panel" role="tabpanel" aria-labelledby="tab-convert">
         <div class="calculator">
           <section class="panel origin" aria-labelledby="source-title">
             <div class="panel-heading"><div class="heading-title"><i class="ph ph-wallet" aria-hidden="true"></i><h2 id="source-title" data-i18n="sourceTitle">Salary</h2></div></div>
@@ -76,9 +81,74 @@
           <div class="exchange-bottom"><div class="rate-summary"><p id="rate-display" class="mono rate-display">USD → BRL</p><p id="rate-detail" class="hint">Loading exchange rate…</p></div><button id="retry-rate" type="button" class="text-button" hidden><i class="ph ph-arrow-clockwise" aria-hidden="true"></i><span data-i18n="retry">Try again</span></button></div>
           <div id="manual-field" class="manual-field" hidden><label class="label" for="manual-rate" id="manual-label">BRL per 1 USD</label><input id="manual-rate" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" maxlength="30" aria-describedby="manual-error"><p id="manual-error" class="error" hidden></p></div>
         </section>
-        <p id="catalogue-error" class="catalogue-error" hidden><span data-i18n="catalogueError">Currencies unavailable. Use a manual rate for USD/BRL.</span> <button type="button" id="retry-currencies" class="text-button"><i class="ph ph-arrow-clockwise" aria-hidden="true"></i><span data-i18n="retry">Try again</span></button></p>
         <p class="calculation-note"><i class="ph ph-info" aria-hidden="true"></i><span data-i18n="calculationNote">Excludes taxes, benefits and transfer fees.</span></p>
         <p id="announcement" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+        </div>
+
+        <div id="compare-panel" role="tabpanel" aria-labelledby="tab-compare" hidden>
+          <div class="compare-toolbar">
+            <div class="segmented" role="group" id="compare-currency-mode" aria-label="Comparison currencies">
+              <button type="button" data-compare-currency-mode="same" aria-pressed="true"><i class="ph ph-equals" aria-hidden="true"></i><span data-i18n="sameCurrencies">Same currency</span></button>
+              <button type="button" data-compare-currency-mode="different" aria-pressed="false"><i class="ph ph-globe" aria-hidden="true"></i><span data-i18n="differentCurrencies">Different currencies</span></button>
+            </div>
+            <button type="button" id="compare-reverse" class="reverse-button"><i class="ph ph-arrows-left-right" aria-hidden="true"></i><span data-i18n="reverseSalaries">Reverse salaries</span></button>
+          </div>
+          <div class="calculator compare-cards">
+            <section class="panel origin" aria-labelledby="compare-a-title">
+              <div class="panel-heading"><div class="heading-title"><i class="ph ph-wallet" aria-hidden="true"></i><h2 id="compare-a-title" data-i18n="salaryA">Salary A</h2></div></div>
+              <div class="field currency-field" data-compare-side="a">
+                <label id="compare-a-currency-label" class="label" data-i18n="currency">Currency</label>
+                <button type="button" class="currency-trigger" id="compare-a-currency" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="compare-a-currency-label compare-a-selection">
+                  <img id="compare-a-flag" src="/static/flags/us.svg" alt="" width="28" height="21"><span id="compare-a-selection" class="selection"><strong>USD</strong><span id="compare-a-name">US Dollar</span></span><i class="ph ph-caret-down chevron" aria-hidden="true"></i>
+                </button>
+                <div class="currency-menu" id="compare-a-menu" hidden>
+                  <div class="search-field"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input id="compare-a-search" class="currency-search" type="search" role="combobox" aria-expanded="false" aria-controls="compare-a-options" aria-autocomplete="list" autocomplete="off" spellcheck="false"></div>
+                  <div id="compare-a-options" class="currency-options" role="listbox" aria-labelledby="compare-a-currency-label"></div>
+                  <p class="empty-search" hidden data-i18n="noCurrencies">No currencies found.</p>
+                </div>
+              </div>
+              <div class="salary-heading"><label for="compare-a-salary" class="label icon-label"><i class="ph ph-coins" aria-hidden="true"></i><span data-i18n="salaryLabel">Amount</span></label><div class="segmented" role="group" id="compare-a-period-control" aria-label="Salary period"><button type="button" data-period="hourly" aria-pressed="false" data-i18n="hourly">Hourly</button><button type="button" data-period="monthly" aria-pressed="false" data-i18n="monthly">Monthly</button><button type="button" data-period="annual" aria-pressed="true" data-i18n="annual">Annual</button></div></div>
+              <div class="salary-input"><span id="compare-a-code" aria-hidden="true">USD</span><input id="compare-a-salary" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0" maxlength="30" aria-describedby="compare-a-error compare-a-equivalent"></div>
+              <p id="compare-a-error" class="error" hidden></p>
+              <p class="equivalent mono" id="compare-a-equivalent">—</p>
+              <div class="hours-field"><label for="compare-a-hours" class="label icon-label"><i class="ph ph-clock" aria-hidden="true"></i><span data-i18n="hoursPerWeek">Hours per week</span></label><input id="compare-a-hours" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" maxlength="30" value="40" aria-describedby="compare-a-hours-error"><p id="compare-a-hours-error" class="error" hidden></p></div>
+              <div class="payment-field"><label class="check"><input id="compare-a-thirteenth" type="checkbox"><i class="ph ph-calendar-blank" aria-hidden="true"></i><span data-i18n="thirteenth">Include 13th payment</span></label><p class="hint" id="compare-a-payments">12 payments/year</p></div>
+            </section>
+            <section class="panel destination" aria-labelledby="compare-b-title">
+              <div class="panel-heading"><div class="heading-title"><i class="ph ph-wallet" aria-hidden="true"></i><h2 id="compare-b-title" data-i18n="salaryB">Salary B</h2></div></div>
+              <div class="field currency-field" data-compare-side="b">
+                <label id="compare-b-currency-label" class="label" data-i18n="currency">Currency</label>
+                <button type="button" class="currency-trigger" id="compare-b-currency" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="compare-b-currency-label compare-b-selection">
+                  <img id="compare-b-flag" src="/static/flags/us.svg" alt="" width="28" height="21"><span id="compare-b-selection" class="selection"><strong>USD</strong><span id="compare-b-name">US Dollar</span></span><i class="ph ph-caret-down chevron" aria-hidden="true"></i>
+                </button>
+                <div class="currency-menu" id="compare-b-menu" hidden>
+                  <div class="search-field"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input id="compare-b-search" class="currency-search" type="search" role="combobox" aria-expanded="false" aria-controls="compare-b-options" aria-autocomplete="list" autocomplete="off" spellcheck="false"></div>
+                  <div id="compare-b-options" class="currency-options" role="listbox" aria-labelledby="compare-b-currency-label"></div>
+                  <p class="empty-search" hidden data-i18n="noCurrencies">No currencies found.</p>
+                </div>
+              </div>
+              <div class="salary-heading"><label for="compare-b-salary" class="label icon-label"><i class="ph ph-coins" aria-hidden="true"></i><span data-i18n="salaryLabel">Amount</span></label><div class="segmented" role="group" id="compare-b-period-control" aria-label="Salary period"><button type="button" data-period="hourly" aria-pressed="false" data-i18n="hourly">Hourly</button><button type="button" data-period="monthly" aria-pressed="false" data-i18n="monthly">Monthly</button><button type="button" data-period="annual" aria-pressed="true" data-i18n="annual">Annual</button></div></div>
+              <div class="salary-input"><span id="compare-b-code" aria-hidden="true">USD</span><input id="compare-b-salary" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0" maxlength="30" aria-describedby="compare-b-error compare-b-equivalent"></div>
+              <p id="compare-b-error" class="error" hidden></p>
+              <p class="equivalent mono" id="compare-b-equivalent">—</p>
+              <div class="hours-field"><label for="compare-b-hours" class="label icon-label"><i class="ph ph-clock" aria-hidden="true"></i><span data-i18n="hoursPerWeek">Hours per week</span></label><input id="compare-b-hours" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" maxlength="30" value="40" aria-describedby="compare-b-hours-error"><p id="compare-b-hours-error" class="error" hidden></p></div>
+              <div class="payment-field"><label class="check"><input id="compare-b-thirteenth" type="checkbox"><i class="ph ph-calendar-blank" aria-hidden="true"></i><span data-i18n="thirteenth">Include 13th payment</span></label><p class="hint" id="compare-b-payments">12 payments/year</p></div>
+            </section>
+          </div>
+          <section class="compare-results" aria-labelledby="compare-results-title">
+            <div class="compare-head"><div><p class="label" id="compare-results-title" data-i18n="annualDifference">Annual difference</p><p class="compare-percent mono" id="compare-percent">—</p><p class="compare-trend" id="compare-trend">Enter both salaries to compare them.</p></div><i id="compare-trend-icon" class="ph ph-equals" aria-hidden="true"></i></div>
+            <div class="compare-difference mono" id="compare-annual">—</div>
+            <div class="compare-breakdown"><div><span class="label" data-i18n="monthlyDifference">Monthly payment difference</span><span class="mono" id="compare-monthly">—</span></div><div><span class="label" data-i18n="hourlyDifference">Hourly difference</span><span class="mono" id="compare-hourly">—</span></div></div>
+          </section>
+          <section class="exchange" aria-labelledby="compare-exchange-title">
+            <div class="exchange-top"><div class="exchange-heading"><h2 id="compare-exchange-title" class="label icon-label"><i class="ph ph-arrows-clockwise" aria-hidden="true"></i><span data-i18n="exchangeTitle">Exchange rate</span></h2><span class="provider-credit"><span data-i18n="poweredBy">powered by</span> <a class="provider-link" href="https://frankfurter.dev/" target="_blank" rel="noreferrer">Frankfurter <i class="ph ph-arrow-square-out" aria-hidden="true"></i></a></span></div><div class="segmented" role="group" id="compare-rate-mode" aria-label="Exchange rate mode"><button type="button" data-compare-rate-mode="auto" aria-pressed="true"><i class="ph ph-globe" aria-hidden="true"></i><span data-i18n="automatic">Automatic</span></button><button type="button" data-compare-rate-mode="manual" aria-pressed="false"><i class="ph ph-pencil-simple" aria-hidden="true"></i><span data-i18n="manual">Manual</span></button></div></div>
+            <div class="exchange-bottom"><div class="rate-summary"><p id="compare-rate-display" class="mono rate-display">USD → USD</p><p id="compare-rate-detail" class="hint">No conversion needed.</p></div><button id="compare-retry-rate" type="button" class="text-button" hidden><i class="ph ph-arrow-clockwise" aria-hidden="true"></i><span data-i18n="retry">Try again</span></button></div>
+            <div id="compare-manual-field" class="manual-field" hidden><label class="label" for="compare-manual-rate" id="compare-manual-label">USD per 1 USD</label><input id="compare-manual-rate" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" maxlength="30" aria-describedby="compare-manual-error"><p id="compare-manual-error" class="error" hidden></p></div>
+          </section>
+          <p class="calculation-note"><i class="ph ph-info" aria-hidden="true"></i><span data-i18n="calculationNote">Excludes taxes, benefits and transfer fees.</span></p>
+          <p id="compare-announcement" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+        </div>
+        <p id="catalogue-error" class="catalogue-error" hidden><span data-i18n="catalogueError">Currencies unavailable. Use a manual rate for USD/BRL.</span> <button type="button" id="retry-currencies" class="text-button"><i class="ph ph-arrow-clockwise" aria-hidden="true"></i><span data-i18n="retry">Try again</span></button></p>
       </main>
 
       <footer><span>Made with love by 🧡💜 <a href="https://fofinhos.studio/" target="_blank" rel="noreferrer">fofinhos.studio <i class="ph ph-arrow-square-out" aria-hidden="true"></i></a></span><a href="https://github.com/felipecustodio/tiny-salary" target="_blank" rel="noreferrer" aria-label="Tiny Salary on GitHub"><i class="ph ph-github-logo" aria-hidden="true"></i>GitHub <i class="ph ph-arrow-square-out" aria-hidden="true"></i></a></footer>
