@@ -1,0 +1,18 @@
+[
+  {"kind":"rate","valid":true,"payload":{"base":"USD","quote":"BRL","rate":5,"date":"2026-10-02","source":"Frankfurter","stale":false,"max_age":3600}},
+  {"kind":"rate","valid":true,"payload":{"base":"USD","quote":"BRL","rate":5,"date":"2026-10-02","source":"Frankfurter","stale":true,"max_age":60}},
+  {"kind":"rate","valid":true,"payload":{"base":"USD","quote":"USD","rate":1,"date":null,"source":"identity","stale":false,"max_age":86400}},
+  {"kind":"currencies","valid":true,"payload":{"currencies":[{"code":"USD","name":"US Dollar"}]}},
+  {"kind":"error","valid":true,"payload":{"error":"invalid_currency"}},
+  {"kind":"rate","valid":false,"payload":{"base":"USD","quote":"BRL","rate":0,"date":"2026-10-02","source":"Frankfurter","stale":false,"max_age":3600}},
+  {"kind":"rate","valid":false,"payload":{"base":"USD","quote":"BRL","rate":5,"date":"2026-02-30","source":"Frankfurter","stale":false,"max_age":3600}},
+  {"kind":"rate","valid":false,"payload":{"base":"USD","quote":"BRL","rate":5,"date":"bad","source":"Frankfurter","stale":false,"max_age":3600}},
+  {"kind":"rate","valid":false,"payload":{"base":"USD","quote":"BRL","rate":5,"date":"0000-01-01","source":"Frankfurter","stale":false,"max_age":3600}},
+  {"kind":"rate","valid":false,"payload":{"base":"USD","quote":"BRL","rate":5,"date":null,"source":"Frankfurter","stale":false,"max_age":3600}},
+  {"kind":"rate","valid":false,"payload":{"base":"USD","quote":"BRL","rate":1,"date":null,"source":"identity","stale":false,"max_age":3600}},
+  {"kind":"rate","valid":false,"payload":{"base":"USD","quote":"USD","rate":1,"date":null,"source":"identity","stale":true,"max_age":3600}},
+  {"kind":"rate","valid":false,"payload":{"base":"USD","quote":"USD","rate":1,"date":null,"source":"identity","stale":false,"max_age":-1}},
+  {"kind":"currencies","valid":false,"payload":{"currencies":[]}},
+  {"kind":"currencies","valid":false,"payload":{"currencies":[{"code":"usd","name":"Dollar"}]}},
+  {"kind":"error","valid":false,"payload":{"error":"unknown"}}
+]

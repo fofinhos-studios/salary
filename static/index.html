@@ -8,6 +8,7 @@
     <title>tiny salary · salary & currency calculator</title>
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
     <link rel="preload" href="/static/fonts/ClashGrotesk-Variable.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/static/icons/style.css">
     <link rel="stylesheet" href="/static/style.css">
     <script type="module" src="/static/app.mjs"></script>
   </head>
@@ -27,59 +28,60 @@
         <noscript><p class="notice">Enable JavaScript to use the calculator. Ative o JavaScript para usar a calculadora.</p></noscript>
         <div class="calculator">
           <section class="panel origin" aria-labelledby="source-title">
-            <div class="panel-heading"><h2 id="source-title" data-i18n="sourceTitle">Salary</h2><span class="direction" aria-hidden="true">↗</span></div>
+            <div class="panel-heading"><div class="heading-title"><i class="ph ph-wallet" aria-hidden="true"></i><h2 id="source-title" data-i18n="sourceTitle">Salary</h2></div></div>
             <div class="field currency-field" data-side="source">
               <label id="source-currency-label" class="label" data-i18n="sourceCurrency">From</label>
               <button type="button" class="currency-trigger" id="source-currency" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="source-currency-label source-selection">
-                <img id="source-flag" src="/static/flags/us.svg" alt="" width="28" height="21"><span id="source-selection" class="selection"><strong>USD</strong><span id="source-name">US Dollar</span></span><span class="chevron" aria-hidden="true">⌄</span>
+                <img id="source-flag" src="/static/flags/us.svg" alt="" width="28" height="21"><span id="source-selection" class="selection"><strong>USD</strong><span id="source-name">US Dollar</span></span><i class="ph ph-caret-down chevron" aria-hidden="true"></i>
               </button>
               <div class="currency-menu" id="source-menu" hidden>
-                <input id="source-search" class="currency-search" type="search" role="combobox" aria-expanded="false" aria-controls="source-options" aria-autocomplete="list" autocomplete="off" spellcheck="false">
+                <div class="search-field"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input id="source-search" class="currency-search" type="search" role="combobox" aria-expanded="false" aria-controls="source-options" aria-autocomplete="list" autocomplete="off" spellcheck="false"></div>
                 <div id="source-options" class="currency-options" role="listbox" aria-labelledby="source-currency-label"></div>
                 <p class="empty-search" hidden data-i18n="noCurrencies">No currencies found.</p>
               </div>
             </div>
-            <div class="salary-heading"><label for="salary" class="label" data-i18n="salaryLabel">Amount</label><div class="segmented" role="group" id="period-control" aria-label="Salary period"><button type="button" data-period="hourly" aria-pressed="false" data-i18n="hourly">Hourly</button><button type="button" data-period="monthly" aria-pressed="false" data-i18n="monthly">Monthly</button><button type="button" data-period="annual" aria-pressed="true" data-i18n="annual">Annual</button></div></div>
+            <div class="salary-heading"><label for="salary" class="label icon-label"><i class="ph ph-coins" aria-hidden="true"></i><span data-i18n="salaryLabel">Amount</span></label><div class="segmented" role="group" id="period-control" aria-label="Salary period"><button type="button" data-period="hourly" aria-pressed="false" data-i18n="hourly">Hourly</button><button type="button" data-period="monthly" aria-pressed="false" data-i18n="monthly">Monthly</button><button type="button" data-period="annual" aria-pressed="true" data-i18n="annual">Annual</button></div></div>
             <div class="salary-input"><span id="input-code" aria-hidden="true">USD</span><input id="salary" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0" maxlength="30" aria-describedby="salary-error source-equivalent"></div>
             <p id="salary-error" class="error" hidden></p>
             <p class="equivalent mono" id="source-equivalent">— / month</p>
-            <div class="hours-field"><label for="hours-per-week" class="label" data-i18n="hoursPerWeek">Hours per week</label><input id="hours-per-week" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" maxlength="30" value="40" aria-describedby="hours-error"><p id="hours-error" class="error" hidden></p></div>
-            <div class="payment-field"><label class="check"><input id="source-thirteenth" type="checkbox"><span data-i18n="thirteenth">Include 13th payment</span></label><p class="hint" id="source-payments">12 payments/year</p></div>
+            <div class="hours-field"><label for="hours-per-week" class="label icon-label"><i class="ph ph-clock" aria-hidden="true"></i><span data-i18n="hoursPerWeek">Hours per week</span></label><input id="hours-per-week" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" maxlength="30" value="40" aria-describedby="hours-error"><p id="hours-error" class="error" hidden></p></div>
+            <div class="payment-field"><label class="check"><input id="source-thirteenth" type="checkbox"><i class="ph ph-calendar-blank" aria-hidden="true"></i><span data-i18n="thirteenth">Include 13th payment</span></label><p class="hint" id="source-payments">12 payments/year</p></div>
           </section>
 
           <section class="panel destination" aria-labelledby="target-title">
-            <div class="panel-heading"><h2 id="target-title" data-i18n="targetTitle">Equivalent</h2><span class="direction" aria-hidden="true">↙</span></div>
+            <button id="swap-currencies" class="swap-currencies" type="button"><img src="/static/favicon.svg" alt=""><span class="sr-only" data-i18n="swapCurrencies">Swap currencies</span></button>
+            <div class="panel-heading"><div class="heading-title"><i class="ph ph-calculator" aria-hidden="true"></i><h2 id="target-title" data-i18n="targetTitle">Equivalent</h2></div></div>
             <div class="field currency-field" data-side="target">
               <label id="target-currency-label" class="label" data-i18n="targetCurrency">To</label>
               <button type="button" class="currency-trigger" id="target-currency" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="target-currency-label target-selection">
-                <img id="target-flag" src="/static/flags/br.svg" alt="" width="28" height="21"><span id="target-selection" class="selection"><strong>BRL</strong><span id="target-name">Brazilian Real</span></span><span class="chevron" aria-hidden="true">⌄</span>
+                <img id="target-flag" src="/static/flags/br.svg" alt="" width="28" height="21"><span id="target-selection" class="selection"><strong>BRL</strong><span id="target-name">Brazilian Real</span></span><i class="ph ph-caret-down chevron" aria-hidden="true"></i>
               </button>
               <div class="currency-menu" id="target-menu" hidden>
-                <input id="target-search" class="currency-search" type="search" role="combobox" aria-expanded="false" aria-controls="target-options" aria-autocomplete="list" autocomplete="off" spellcheck="false">
+                <div class="search-field"><i class="ph ph-magnifying-glass" aria-hidden="true"></i><input id="target-search" class="currency-search" type="search" role="combobox" aria-expanded="false" aria-controls="target-options" aria-autocomplete="list" autocomplete="off" spellcheck="false"></div>
                 <div id="target-options" class="currency-options" role="listbox" aria-labelledby="target-currency-label"></div>
                 <p class="empty-search" hidden data-i18n="noCurrencies">No currencies found.</p>
               </div>
             </div>
-            <div class="result-heading"><label for="target-salary" class="label" data-i18n="targetAmount">Equivalent amount</label><div class="segmented" role="group" id="target-period-control" aria-label="Equivalent period"><button type="button" data-period="hourly" aria-pressed="false" data-i18n="hourly">Hourly</button><button type="button" data-period="monthly" aria-pressed="true" data-i18n="monthly">Monthly</button><button type="button" data-period="annual" aria-pressed="false" data-i18n="annual">Annual</button></div></div>
+            <div class="result-heading"><label for="target-salary" class="label icon-label"><i class="ph ph-equals" aria-hidden="true"></i><span data-i18n="targetAmount">Equivalent amount</span></label><div class="segmented" role="group" id="target-period-control" aria-label="Equivalent period"><button type="button" data-period="hourly" aria-pressed="false" data-i18n="hourly">Hourly</button><button type="button" data-period="monthly" aria-pressed="true" data-i18n="monthly">Monthly</button><button type="button" data-period="annual" aria-pressed="false" data-i18n="annual">Annual</button></div></div>
             <div class="salary-input"><span id="result-code" aria-hidden="true">BRL</span><input id="target-salary" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0" maxlength="30" aria-describedby="target-error target-equivalent hourly-result"></div>
             <p id="target-error" class="error" hidden></p>
             <p class="equivalent mono" id="target-equivalent">— / year</p>
             <p class="equivalent mono" id="hourly-result">— / hour</p>
-            <div class="payment-field"><label class="check"><input id="target-thirteenth" type="checkbox"><span data-i18n="thirteenth">Include 13th payment</span></label><p class="hint" id="target-payments">12 payments/year</p></div>
+            <div class="payment-field"><label class="check"><input id="target-thirteenth" type="checkbox"><i class="ph ph-calendar-blank" aria-hidden="true"></i><span data-i18n="thirteenth">Include 13th payment</span></label><p class="hint" id="target-payments">12 payments/year</p></div>
           </section>
         </div>
 
         <section class="exchange" aria-labelledby="exchange-title">
-          <div class="exchange-top"><div class="exchange-heading"><h2 id="exchange-title" class="label" data-i18n="exchangeTitle">Exchange rate</h2><span class="provider-credit"><span data-i18n="poweredBy">powered by</span> <a class="provider-link" href="https://frankfurter.dev/" target="_blank" rel="noreferrer">Frankfurter ↗</a></span></div><div class="segmented" role="group" id="mode-control" aria-label="Exchange rate mode"><button type="button" data-mode="auto" aria-pressed="true" data-i18n="automatic">Automatic</button><button type="button" data-mode="manual" aria-pressed="false" data-i18n="manual">Manual</button></div></div>
-          <div class="exchange-bottom"><div class="rate-summary"><p id="rate-display" class="mono rate-display">USD → BRL</p><p id="rate-detail" class="hint">Loading exchange rate…</p></div><button id="retry-rate" type="button" class="text-button" hidden data-i18n="retry">Try again ↗</button></div>
+          <div class="exchange-top"><div class="exchange-heading"><h2 id="exchange-title" class="label icon-label"><i class="ph ph-arrows-clockwise" aria-hidden="true"></i><span data-i18n="exchangeTitle">Exchange rate</span></h2><span class="provider-credit"><span data-i18n="poweredBy">powered by</span> <a class="provider-link" href="https://frankfurter.dev/" target="_blank" rel="noreferrer">Frankfurter <i class="ph ph-arrow-square-out" aria-hidden="true"></i></a></span></div><div class="segmented" role="group" id="mode-control" aria-label="Exchange rate mode"><button type="button" data-mode="auto" aria-pressed="true"><i class="ph ph-globe" aria-hidden="true"></i><span data-i18n="automatic">Automatic</span></button><button type="button" data-mode="manual" aria-pressed="false"><i class="ph ph-pencil-simple" aria-hidden="true"></i><span data-i18n="manual">Manual</span></button></div></div>
+          <div class="exchange-bottom"><div class="rate-summary"><p id="rate-display" class="mono rate-display">USD → BRL</p><p id="rate-detail" class="hint">Loading exchange rate…</p></div><button id="retry-rate" type="button" class="text-button" hidden><i class="ph ph-arrow-clockwise" aria-hidden="true"></i><span data-i18n="retry">Try again</span></button></div>
           <div id="manual-field" class="manual-field" hidden><label class="label" for="manual-rate" id="manual-label">BRL per 1 USD</label><input id="manual-rate" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" maxlength="30" aria-describedby="manual-error"><p id="manual-error" class="error" hidden></p></div>
         </section>
-        <p id="catalogue-error" class="catalogue-error" hidden><span data-i18n="catalogueError">Currencies unavailable. Use a manual rate for USD/BRL.</span> <button type="button" id="retry-currencies" class="text-button" data-i18n="retry">Try again ↗</button></p>
-        <p class="calculation-note" data-i18n="calculationNote">Excludes taxes, benefits and transfer fees.</p>
+        <p id="catalogue-error" class="catalogue-error" hidden><span data-i18n="catalogueError">Currencies unavailable. Use a manual rate for USD/BRL.</span> <button type="button" id="retry-currencies" class="text-button"><i class="ph ph-arrow-clockwise" aria-hidden="true"></i><span data-i18n="retry">Try again</span></button></p>
+        <p class="calculation-note"><i class="ph ph-info" aria-hidden="true"></i><span data-i18n="calculationNote">Excludes taxes, benefits and transfer fees.</span></p>
         <p id="announcement" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
       </main>
 
-      <footer><span>Made with love by 🧡💜 <a href="https://fofinhos.studio/" target="_blank" rel="noreferrer">fofinhos.studio</a></span><a href="https://github.com/felipecustodio/tiny-salary" target="_blank" rel="noreferrer" aria-label="Tiny Salary on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.65 7.65 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>GitHub ↗</a></footer>
+      <footer><span>Made with love by 🧡💜 <a href="https://fofinhos.studio/" target="_blank" rel="noreferrer">fofinhos.studio <i class="ph ph-arrow-square-out" aria-hidden="true"></i></a></span><a href="https://github.com/felipecustodio/tiny-salary" target="_blank" rel="noreferrer" aria-label="Tiny Salary on GitHub"><i class="ph ph-github-logo" aria-hidden="true"></i>GitHub <i class="ph ph-arrow-square-out" aria-hidden="true"></i></a></footer>
     </div>
   </body>
 </html>

@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { gzipSync } from "node:zlib";
-import { amount, calculate, changePeriod, formatSalaryText, money, parseAmount, searchKey } from "../static/core.mjs";
+import { amount, calculate, changePeriod, formatSalaryText, money, parseAmount, searchKey } from "../frontend/core.ts";
+import { flagFor } from "../frontend/flags.ts";
 
 test("annual and monthly inputs preserve the annual total across all 12/13 combinations", () => {
   for (const sourcePayments of [12, 13]) {
@@ -122,9 +124,21 @@ test("currency display respects ISO minor units and search ignores accents", () 
   assert.equal(searchKey("Dólar Canadense"), "dolar canadense");
 });
 
+test("flag lookup handles euro, currency families and unknown issuers", () => {
+  assert.equal(flagFor("EUR"), "/static/flags/eu.svg");
+  assert.equal(flagFor("XAU"), "/static/flags/neutral.svg");
+  assert.equal(flagFor("ZZZ"), "/static/flags/neutral.svg");
+  assert.equal(flagFor("USD"), "/static/flags/us.svg");
+});
+
+test("annual hours overflow is rejected", () => {
+  assert.equal(calculate(1, "hourly", 12, 12, 1, 1e308), null);
+});
+
 test("the complete HTML/CSS/JS payload stays below 40 KiB gzipped", () => {
-  const root = new URL("../static/", import.meta.url);
-  const bytes = readdirSync(root).filter(name => /\.(html|css|mjs)$/.test(name))
-    .reduce((sum, name) => sum + gzipSync(readFileSync(new URL(name, root))).length, 0);
+  const root = join(process.cwd(), "static");
+  const files = [...readdirSync(root).filter(name => /\.(html|css|mjs)$/.test(name)), join("icons", "style.css")];
+  const bytes = files
+    .reduce((sum, name) => sum + gzipSync(readFileSync(join(root, name))).length, 0);
   assert.ok(bytes <= 40 * 1024, `Frontend: ${bytes} bytes gzipped`);
 });

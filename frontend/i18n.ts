@@ -1,11 +1,11 @@
 export const messages = {
   en: {
     skip: "Skip to calculator", tagline: "salary & currency calculator", language: "Language",
-    sourceTitle: "Salary", targetTitle: "Equivalent", sourceCurrency: "From", targetCurrency: "To",
+    sourceTitle: "Salary", targetTitle: "Equivalent", sourceCurrency: "From", targetCurrency: "To", swapCurrencies: "Swap currencies",
     salaryLabel: "Amount", hourly: "Hourly", monthly: "Monthly", annual: "Annual", thirteenth: "Include 13th payment",
     hoursPerWeek: "Hours per week", invalidHours: "Enter valid hours per week greater than zero.", hourlyNoThirteenth: "Not applied to hourly pay",
     targetAmount: "Equivalent amount", targetPeriod: "Equivalent period", exchangeTitle: "Exchange rate", poweredBy: "powered by", automatic: "Automatic", manual: "Manual",
-    retry: "Try again ↗", noCurrencies: "No currencies found.", search: "Search code or currency name",
+    retry: "Try again", noCurrencies: "No currencies found.", search: "Search code or currency name",
     catalogueError: "Currencies unavailable. Use a manual rate for USD/BRL.",
     calculationNote: "Excludes taxes, benefits and transfer fees.",
     payments12: "12 payments/year", payments13: "13 payments/year",
@@ -18,11 +18,11 @@ export const messages = {
   },
   pt: {
     skip: "Ir para a calculadora", tagline: "calculadora de salário e câmbio", language: "Idioma",
-    sourceTitle: "Salário", targetTitle: "Equivalente", sourceCurrency: "De", targetCurrency: "Para",
+    sourceTitle: "Salário", targetTitle: "Equivalente", sourceCurrency: "De", targetCurrency: "Para", swapCurrencies: "Inverter moedas",
     salaryLabel: "Valor", hourly: "Por hora", monthly: "Mensal", annual: "Anual", thirteenth: "Incluir 13º salário",
     hoursPerWeek: "Horas por semana", invalidHours: "Informe horas semanais válidas, maiores que zero.", hourlyNoThirteenth: "Não aplicado ao valor por hora",
     targetAmount: "Valor equivalente", targetPeriod: "Período do equivalente", exchangeTitle: "Cotação", poweredBy: "fornecido por", automatic: "Automática", manual: "Manual",
-    retry: "Tentar novamente ↗", noCurrencies: "Nenhuma moeda encontrada.", search: "Buscar código ou nome da moeda",
+    retry: "Tentar novamente", noCurrencies: "Nenhuma moeda encontrada.", search: "Buscar código ou nome da moeda",
     catalogueError: "Moedas indisponíveis. Use uma cotação manual para USD/BRL.",
     calculationNote: "Não inclui impostos, benefícios e taxas de transferência.",
     payments12: "12 pagamentos/ano", payments13: "13 pagamentos/ano",
@@ -33,4 +33,7 @@ export const messages = {
     tooLarge: "Este valor é grande demais para calcular com precisão.", perOne: "por 1", salaryPeriod: "Período do salário", rateMode: "Modo de cotação",
     resultAnnouncement: "Equivalente", emptyResult: "Informe um valor para ver o equivalente.", unavailableResult: "Equivalente indisponível.",
   },
-};
+} as const;
+
+export type Language = keyof typeof messages;
+export type MessageKey = keyof typeof messages.en;

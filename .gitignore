@@ -45,6 +45,7 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+coverage.json
 *.cover
 *.py.cover
 *.lcov
@@ -207,6 +208,8 @@ tempCodeRunnerFile.py
 
 # Ruff stuff:
 .ruff_cache/
+node_modules/
+coverage/
 
 # PyPI configuration file
 .pypirc

@@ -1,28 +1,57 @@
+"""HTTP adapter checks for the Vercel entry point."""
+
 import json
-import time
-import unittest
-from unittest.mock import AsyncMock
+
+import pytest
 
 import exchange
 from api.index import app
+from models import CurrenciesResponse, Currency, Rate
 
 
-class VercelTests(unittest.IsolatedAsyncioTestCase):
-    async def test_routing_validation_and_method(self):
-        exchange.catalogue = (time.monotonic(), [{"code": "USD", "name": "US Dollar"}])
-        for method, query, status, expected in [
-            ("GET", b"resource=currencies", 200, {"currencies": exchange.catalogue[1]}),
-            ("GET", b"resource=rate&base=USD&quote=USD", 200, {"rate": 1.0}),
-            ("GET", b"resource=rate&base=../&quote=USD", 400, {"error": "invalid_currency"}),
-            ("GET", b"resource=missing", 404, {"error": "not_found"}),
-            ("POST", b"resource=rate", 405, {"error": "method_not_allowed"}),
-        ]:
-            with self.subTest(method=method, query=query):
-                send = AsyncMock()
-                await app(
-                    {"type": "http", "method": method, "query_string": query}, AsyncMock(), send
-                )
-                start, body = [call.args[0] for call in send.await_args_list]
-                self.assertEqual(start["status"], status)
-                self.assertIn((b"cache-control", b"no-store"), start["headers"])
-                self.assertTrue(expected.items() <= json.loads(body["body"]).items())
+@pytest.mark.parametrize(
+    "method,query,status,expected",
+    [
+        ("GET", b"resource=currencies", 200, "currencies"),
+        ("GET", b"resource=rate&base=USD&quote=USD", 200, "identity"),
+        ("GET", b"resource=rate&base=../&quote=USD", 400, "invalid_currency"),
+        ("GET", b"resource=missing", 404, "not_found"),
+        ("POST", b"resource=rate", 405, "method_not_allowed"),
+    ],
+)
+async def test_vercel_response(method: str, query: bytes, status: int, expected: str) -> None:
+    exchange.catalogue = (exchange.time.monotonic(), [Currency(code="USD", name="US Dollar")])
+    sent: list[dict[str, object]] = []
+
+    async def receive() -> object:
+        return {}
+
+    async def send(message: dict[str, object]) -> None:
+        sent.append(message)
+
+    await app({"type": "http", "method": method, "query_string": query}, receive, send)
+    start, body = sent
+    assert start["status"] == status
+    assert isinstance(start["headers"], list)
+    assert (b"cache-control", b"no-store") in start["headers"]
+    assert isinstance(body["body"], bytes)
+    payload = json.loads(body["body"])
+    if expected == "currencies":
+        CurrenciesResponse.model_validate(payload)
+    elif expected == "identity":
+        assert Rate.model_validate(payload).source == "identity"
+    else:
+        assert payload == {"error": expected}
+
+
+async def test_non_http_scope_sends_nothing() -> None:
+    sent: list[dict[str, object]] = []
+
+    async def receive() -> object:
+        return {}
+
+    async def send(message: dict[str, object]) -> None:
+        sent.append(message)
+
+    await app({"type": "websocket"}, receive, send)
+    assert sent == []

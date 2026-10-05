@@ -8,15 +8,16 @@ from robyn import Request, Response, Robyn, serve_html
 from robyn.responses import FileResponse
 
 from exchange import dispatch
+from models import ApiResponse
 
 ROOT = Path(__file__).parent
 
 
-def json_response(payload: object, status: int = 200) -> Response:
+def json_response(payload: ApiResponse, status: int = 200) -> Response:
     return Response(
         status_code=status,
         headers={"Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store"},
-        description=json.dumps(payload, allow_nan=False),
+        description=json.dumps(payload.model_dump(mode="json"), allow_nan=False),
     )
 
 
