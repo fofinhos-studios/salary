@@ -156,3 +156,11 @@ test("the complete HTML/CSS/JS payload stays below 40 KiB gzipped", () => {
     .reduce((sum, name) => sum + gzipSync(readFileSync(join(root, name))).length, 0);
   assert.ok(bytes <= 40 * 1024, `Frontend: ${bytes} bytes gzipped`);
 });
+
+test("all lazy chunks keep the loaded experience below 80 KiB gzipped", () => {
+  const root = join(process.cwd(), "static");
+  const files = [...readdirSync(root).filter(name => /\.(html|css|mjs)$/.test(name)),
+    ...readdirSync(join(root, "chunks")).map(name => join("chunks", name)), join("icons", "style.css")];
+  const bytes = files.reduce((sum, name) => sum + gzipSync(readFileSync(join(root, name))).length, 0);
+  assert.ok(bytes <= 80 * 1024, `Loaded frontend: ${bytes} bytes gzipped`);
+});

@@ -29,6 +29,8 @@ let visibleCurrencies: Currency[] = [];
 let displayNames: Intl.DisplayNames;
 let currencyNames = new Map<string, string>();
 let compare: ReturnType<typeof mountCompare> | undefined;
+let brazil: { setLanguage: () => void; refreshCurrencies: () => void; activate: () => void } | undefined;
+let brazilLoading = false;
 const locale = (): string => language === "pt" ? "pt-BR" : "en-US";
 const t = (key: MessageKey): string => messages[language][key];
 const currencyName = (code: string): string => currencyNames.get(code) || code;
@@ -72,6 +74,7 @@ function setLanguage(): void {
   if (state.hoursPerWeek !== null) $<HTMLInputElement>("hours-per-week").value = formatRate(state.hoursPerWeek);
   if (state.manual !== null) $<HTMLInputElement>("manual-rate").value = formatRate(state.manual);
   compare?.setLanguage();
+  brazil?.setLanguage();
   render();
 }
 
@@ -217,6 +220,7 @@ async function fetchCurrencies() {
     renderCurrency("source");
     renderCurrency("target");
     compare?.refreshCurrencies();
+    brazil?.refreshCurrencies();
     if (openSide) filterCurrencies();
   } catch { catalogueFailed = true; }
   finally { $<HTMLButtonElement>("retry-currencies").disabled = false; render(); }
@@ -390,7 +394,8 @@ $("retry-currencies").addEventListener("click", fetchCurrencies);
 document.addEventListener("visibilitychange", () => { if (!document.hidden && state.mode === "auto" && Date.now() >= state.expires) fetchRate(); });
 window.addEventListener("focus", () => { if (state.mode === "auto" && Date.now() >= state.expires) fetchRate(); });
 compare = mountCompare(() => language, () => currencies);
-const tabs = ["convert", "compare"] as const;
+const tabs = ["convert", "compare", "brazil"] as const;
+const brazilPanel = $("brazil-panel");
 function selectTab(tab: typeof tabs[number], focus = false) {
   closeMenu();
   for (const name of tabs) {
@@ -402,6 +407,17 @@ function selectTab(tab: typeof tabs[number], focus = false) {
   }
   if (focus) $(`tab-${tab}`).focus();
   if (tab === "compare") compare?.activate();
+  if (tab === "brazil") {
+    if (brazil) brazil.activate();
+    else if (!brazilLoading) {
+      brazilLoading = true;
+      import("./brazil").then(({ mountBrazil }) => {
+      if (document.getElementById("brazil-panel") !== brazilPanel) return;
+      brazil = mountBrazil(() => language, () => currencies);
+      brazil.activate();
+      }).finally(() => { brazilLoading = false; });
+    }
+  }
 }
 for (const tab of tabs) {
   $(`tab-${tab}`).addEventListener("click", () => selectTab(tab));

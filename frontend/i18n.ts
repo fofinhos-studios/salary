@@ -1,7 +1,7 @@
 export const messages = {
   en: {
     skip: "Skip to calculator", tagline: "salary & currency calculator", language: "Language",
-    convertTab: "Convert", compareTab: "Compare", calculatorTabs: "Calculator views",
+    convertTab: "Convert", compareTab: "Compare", brazilTab: "CLT vs. PJ", calculatorTabs: "Calculator views",
     salaryA: "Salary A", salaryB: "Salary B", currency: "Currency", sameCurrencies: "Same currency", differentCurrencies: "Different currencies",
     currencyMode: "Comparison currencies", reverseSalaries: "Reverse salaries", annualDifference: "Annual difference",
     monthlyDifference: "Monthly payment difference", hourlyDifference: "Hourly difference", annualIncrease: "Annual increase",
@@ -24,7 +24,7 @@ export const messages = {
   },
   pt: {
     skip: "Ir para a calculadora", tagline: "calculadora de salário e câmbio", language: "Idioma",
-    convertTab: "Converter", compareTab: "Comparar", calculatorTabs: "Modos da calculadora",
+    convertTab: "Converter", compareTab: "Comparar", brazilTab: "CLT vs. PJ", calculatorTabs: "Modos da calculadora",
     salaryA: "Salário A", salaryB: "Salário B", currency: "Moeda", sameCurrencies: "Mesma moeda", differentCurrencies: "Moedas diferentes",
     currencyMode: "Moedas da comparação", reverseSalaries: "Inverter salários", annualDifference: "Diferença anual",
     monthlyDifference: "Diferença por pagamento mensal", hourlyDifference: "Diferença por hora", annualIncrease: "Aumento anual",

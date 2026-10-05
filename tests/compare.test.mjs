@@ -61,7 +61,7 @@ test("tabs preserve independent inputs and support keyboard navigation", async (
   assert.equal(el("compare-panel").hidden, false);
   el("tab-compare").dispatchEvent(new window.KeyboardEvent("keydown", { key: "Home", bubbles: true }));
   el("tab-convert").dispatchEvent(new window.KeyboardEvent("keydown", { key: "End", bubbles: true }));
-  assert.equal(el("compare-panel").hidden, false);
+  assert.equal(el("brazil-panel").hidden, false);
 });
 
 test("same-currency salaries update live, including 13 payments and different hours", async () => {

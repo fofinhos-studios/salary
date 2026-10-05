@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "esbuild frontend/app.ts --bundle --format=esm --platform=browser --target=es2022 --minify --outfile=static/app.mjs && node -e \"const fs=require('node:fs');fs.mkdirSync('static/icons',{recursive:true});for(const name of ['style.css','Phosphor.woff2'])fs.copyFileSync('node_modules/@phosphor-icons/web/src/regular/'+name,'static/icons/'+name);fs.copyFileSync('node_modules/@phosphor-icons/web/LICENSE','static/icons/LICENSE')\"",
+    "build": "node scripts/build.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "coverage": "vitest run --coverage",
