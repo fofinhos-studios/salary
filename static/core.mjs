@@ -10,20 +10,26 @@ export function parseAmount(text, locale) {
   return Number.isFinite(number) && number >= 0 && number <= Number.MAX_SAFE_INTEGER ? number : null;
 }
 
-export function calculate(value, period, sourcePayments, targetPayments, rate) {
+export function calculate(value, period, sourcePayments, targetPayments, rate, hoursPerWeek = 40) {
   if (!Number.isFinite(value) || value < 0 || !Number.isFinite(rate) || rate <= 0) return null;
   if (![12, 13].includes(sourcePayments) || ![12, 13].includes(targetPayments)) return null;
-  if (!["monthly", "annual"].includes(period)) return null;
-  const sourceAnnual = period === "annual" ? value : value * sourcePayments;
+  if (!["hourly", "monthly", "annual"].includes(period)) return null;
+  const annualHours = hoursPerWeek * 52;
+  if (!Number.isFinite(hoursPerWeek) || hoursPerWeek <= 0 || !Number.isFinite(annualHours) || annualHours > Number.MAX_SAFE_INTEGER) return null;
+  const sourceAnnual = period === "annual" ? value : period === "monthly" ? value * sourcePayments : value * annualHours;
   const annual = sourceAnnual * rate;
   const monthly = annual / targetPayments;
-  if (![sourceAnnual, annual, monthly].every(n => Number.isFinite(n) && n <= Number.MAX_SAFE_INTEGER)) return null;
-  return { sourceAnnual, annual, monthly };
+  const hourly = annual / annualHours;
+  if (![sourceAnnual, annual, monthly, hourly].every(n => Number.isFinite(n) && n <= Number.MAX_SAFE_INTEGER)) return null;
+  return { sourceAnnual, annual, monthly, hourly };
 }
 
-export function changePeriod(value, current, next, payments) {
+export function changePeriod(value, current, next, payments, hoursPerWeek = 40) {
   if (value === null || current === next) return value;
-  return next === "annual" ? value * payments : value / payments;
+  const annualHours = hoursPerWeek * 52;
+  const annual = current === "annual" ? value : current === "monthly" ? value * payments : value * annualHours;
+  const converted = next === "annual" ? annual : next === "monthly" ? annual / payments : annual / annualHours;
+  return Number.isFinite(converted) && converted <= Number.MAX_SAFE_INTEGER ? converted : null;
 }
 
 export function money(value, currency, locale) {

@@ -1,7 +1,8 @@
 # tiny salary
 
 A small, instant salary and currency calculator. English and Brazilian Portuguese,
-daily exchange rates, manual rates, and independent 12/13-payment schedules.
+hourly, monthly and annual pay, daily exchange rates, manual rates, and independent
+12/13-payment schedules.
 
 ## Run locally
 
@@ -48,15 +49,28 @@ rates; without a successful cached response, provider outages offer manual entry
 For each side, payments per year are 12 or 13:
 
 ```text
-Source annual = annual input, or monthly input × source payments
+Annual hours = hours per week × 52
+Source annual = annual input, monthly input × source payments, or hourly input × annual hours
 Target annual = source annual × exchange rate
 Target monthly = target annual ÷ target payments
+Target hourly = target annual ÷ annual hours
 ```
 
-Switching the input period preserves annual compensation. Changing a 13th-payment
-checkbox preserves the entered amount and period. With 13 payments, the monthly
+Switching the input period preserves annual compensation. Hours per week defaults to
+40 and accepts positive fractional values. Changing hours keeps the entered amount:
+hourly input changes annual compensation, while monthly or annual input changes only
+the hourly equivalent. Changing a 13th-payment checkbox preserves the entered amount
+and period. The 13th payment on an hourly input side is ignored and disabled; its
+selection returns when switching back. With 13 payments, the monthly
 number is each regular payment; the extra payment has the same value. It is not
 the annual total divided by 12, and does not calculate prorated legal entitlements.
+
+Enter an amount on either side. Each side supports hourly, monthly and annual periods
+independently. The last edited amount stays fixed when the rate, currency or payment
+schedule changes. When entering the
+target amount, the source annual amount is the target annual amount divided by the
+exchange rate. If a rate is unavailable, the entered amount stays in place until a
+valid rate arrives.
 
 Examples: 120,000 annually at a rate of 5 gives 600,000 annually; 50,000 per payment
 with 12 payments, or 46,153.85 with 13. Taxes, benefits and transfer fees are excluded.
@@ -108,7 +122,7 @@ uv run ruff format --check .
 uv run ty check
 ```
 
-Tests cover all 12/13 combinations, locale parsing, precision across period changes,
+Tests cover hourly conversion, all 12/13 combinations, locale parsing, precision across period changes,
 currency rounding, invalid values, provider failures, stale-cache expiry and cache
 limits. A size check caps total HTML/CSS/JS at 40 KiB gzipped, excluding fonts/flags.
 

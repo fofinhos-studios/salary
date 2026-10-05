@@ -5,7 +5,7 @@ import { flagFor } from "./flags.mjs";
 const $ = id => document.getElementById(id);
 let language = navigator.language.toLowerCase().startsWith("pt") ? "pt" : "en";
 try { language = ["pt", "en"].includes(localStorage.getItem("language")) ? localStorage.getItem("language") : language; } catch { /* Storage is optional. */ }
-const state = { source: "USD", target: "BRL", period: "annual", sourcePayments: 12, targetPayments: 12, value: null, mode: "auto", manual: null, quote: null, expires: 0, loading: false, error: false };
+const state = { source: "USD", target: "BRL", period: "annual", targetPeriod: "monthly", editedSide: "source", sourcePayments: 12, targetPayments: 12, hoursPerWeek: 40, value: null, mode: "auto", manual: null, quote: null, expires: 0, loading: false, error: false };
 let currencies = [{ code: "BRL", name: "Brazilian Real" }, { code: "USD", name: "US Dollar" }];
 let catalogueFailed = false;
 let requestNumber = 0;
@@ -20,6 +20,8 @@ const locale = () => language === "pt" ? "pt-BR" : "en-US";
 const t = key => messages[language][key];
 const currencyName = code => currencyNames.get(code) || code;
 const activeRate = () => state.source === state.target ? 1 : state.mode === "manual" ? state.manual : state.quote?.rate ?? null;
+const salaryField = side => $(side === "source" ? "salary" : "target-salary");
+const periodFor = side => side === "source" ? state.period : state.targetPeriod;
 
 function rebuildNames() {
   displayNames = new Intl.DisplayNames([locale()], { type: "currency" });
@@ -35,12 +37,13 @@ function showError(id, text) {
 }
 
 function setLanguage() {
-  if (state.value === null && $("salary").value.trim()) state.value = parseAmount($("salary").value, locale());
+  if (state.value === null && salaryField(state.editedSide).value.trim()) state.value = parseAmount(salaryField(state.editedSide).value, locale());
   document.documentElement.lang = locale();
   document.title = `tiny salary · ${t("tagline")}`;
   $("language").value = language;
   document.querySelectorAll("[data-i18n]").forEach(element => { element.textContent = t(element.dataset.i18n); });
   $("period-control").setAttribute("aria-label", t("salaryPeriod"));
+  $("target-period-control").setAttribute("aria-label", t("targetPeriod"));
   $("mode-control").setAttribute("aria-label", t("rateMode"));
   rebuildNames();
   for (const side of ["source", "target"]) {
@@ -48,7 +51,8 @@ function setLanguage() {
     $(`${side}-search`).setAttribute("aria-label", `${t(side === "source" ? "sourceCurrency" : "targetCurrency")}: ${t("search")}`);
     renderCurrency(side);
   }
-  if (state.value !== null) $("salary").value = amount(state.value, state.source, locale());
+  if (state.value !== null) salaryField(state.editedSide).value = amount(state.value, state[state.editedSide], locale());
+  if (state.hoursPerWeek !== null) $("hours-per-week").value = formatRate(state.hoursPerWeek);
   if (state.manual !== null) $("manual-rate").value = formatRate(state.manual);
   render();
 }
@@ -66,24 +70,52 @@ function formatRate(value) {
 
 function render() {
   const rate = activeRate();
-  const result = calculate(state.value, state.period, state.sourcePayments, state.targetPayments, rate);
-  const source = calculate(state.value, state.period, state.sourcePayments, state.sourcePayments, 1);
+  const side = state.editedSide;
+  const otherSide = side === "source" ? "target" : "source";
+  const own = calculate(state.value, periodFor(side), state[`${side}Payments`], state[`${side}Payments`], 1, state.hoursPerWeek);
+  const converted = rate > 0 ? calculate(state.value, periodFor(side), state[`${side}Payments`], state[`${otherSide}Payments`], side === "source" ? rate : 1 / rate, state.hoursPerWeek) : null;
+  const source = side === "source" ? own : converted;
+  const target = side === "target" ? own : converted;
   $("input-code").textContent = state.source;
   $("result-code").textContent = state.target;
-  $("monthly-result").textContent = result ? amount(result.monthly, state.target, locale()) : "—";
-  $("annual-result").textContent = `${result ? money(result.annual, state.target, locale()) : "—"} ${t("perYear")}`;
+  const values = { source, target };
+  for (const current of ["source", "target"]) {
+    if (current !== side) {
+      const data = values[current];
+      const value = data?.[periodFor(current)];
+      salaryField(current).value = value === undefined ? "" : amount(value, state[current], locale());
+    }
+  }
+  const targetOther = state.targetPeriod === "annual" ? target?.monthly : target?.annual;
+  $("target-equivalent").textContent = `${targetOther !== undefined ? money(targetOther, state.target, locale()) : "—"} ${t(state.targetPeriod === "annual" ? "perMonth" : "perYear")}`;
+  $("hourly-result").textContent = `${target ? money(target.hourly, state.target, locale()) : "—"} ${t("perHour")}`;
+  $("hourly-result").hidden = state.targetPeriod === "hourly";
   const other = state.period === "annual" ? source?.monthly : source?.annual;
   $("source-equivalent").textContent = `${other !== undefined ? money(other, state.source, locale()) : "—"} ${t(state.period === "annual" ? "perMonth" : "perYear")}`;
-  for (const side of ["source", "target"]) $(`${side}-payments`).textContent = t(state[`${side}Payments`] === 13 ? "payments13" : "payments12");
-  document.querySelectorAll("[data-period]").forEach(button => button.setAttribute("aria-pressed", String(button.dataset.period === state.period)));
+  for (const current of ["source", "target"]) {
+    $(`${current}-payments`).textContent = t(periodFor(current) === "hourly" ? "hourlyNoThirteenth" : state[`${current}Payments`] === 13 ? "payments13" : "payments12");
+    $(`${current}-thirteenth`).disabled = periodFor(current) === "hourly";
+  }
+  for (const current of ["source", "target"]) {
+    $(`${current === "source" ? "period" : "target-period"}-control`).querySelectorAll("[data-period]").forEach(button => {
+      button.setAttribute("aria-pressed", String(button.dataset.period === periodFor(current)));
+      button.disabled = state.hoursPerWeek === null && button.dataset.period !== periodFor(current);
+    });
+  }
   document.querySelectorAll("[data-mode]").forEach(button => {
     button.setAttribute("aria-pressed", String(button.dataset.mode === state.mode));
     button.disabled = state.source === state.target;
   });
-  const invalidSalary = $("salary").value.trim() !== "" && state.value === null;
-  const tooLarge = state.value !== null && (!source || (rate > 0 && !result));
-  showError("salary-error", invalidSalary ? t("invalidAmount") : tooLarge ? t("tooLarge") : "");
-  $("salary").setAttribute("aria-invalid", String(invalidSalary || tooLarge));
+  const invalidSalary = salaryField(side).value.trim() !== "" && state.value === null;
+  const tooLarge = state.hoursPerWeek !== null && state.value !== null && (!own || (rate > 0 && !converted));
+  for (const current of ["source", "target"]) {
+    const invalid = current === side && (invalidSalary || tooLarge);
+    showError(current === "source" ? "salary-error" : "target-error", invalid ? t(invalidSalary ? "invalidAmount" : "tooLarge") : "");
+    salaryField(current).setAttribute("aria-invalid", String(invalid));
+  }
+  const invalidHours = state.hoursPerWeek === null;
+  showError("hours-error", invalidHours ? t("invalidHours") : "");
+  $("hours-per-week").setAttribute("aria-invalid", String(invalidHours));
   $("manual-field").hidden = state.mode !== "manual" || state.source === state.target;
   const invalidManual = state.mode === "manual" && $("manual-rate").value.trim() !== "" && !(state.manual > 0);
   showError("manual-error", invalidManual ? t("invalidRate") : "");
@@ -105,8 +137,9 @@ function render() {
   $("catalogue-error").hidden = !catalogueFailed;
   clearTimeout(announcementTimer);
   announcementTimer = setTimeout(() => {
+    const result = values[otherSide];
     $("announcement").textContent = result
-      ? `${t("resultAnnouncement")}: ${money(result.monthly, state.target, locale())} ${t("perMonth")}; ${money(result.annual, state.target, locale())} ${t("perYear")}.`
+      ? `${t("resultAnnouncement")}: ${money(result[periodFor(otherSide)], state[otherSide], locale())} ${t(periodFor(otherSide) === "hourly" ? "perHour" : periodFor(otherSide) === "monthly" ? "perMonth" : "perYear")}.`
       : t(state.value === null && !invalidSalary ? "emptyResult" : "unavailableResult");
   }, 650);
 }
@@ -222,7 +255,7 @@ function selectCurrency(index) {
   state.mode = "auto";
   state.manual = null;
   $("manual-rate").value = "";
-  if (state.value !== null) $("salary").value = amount(state.value, state.source, locale());
+  if (state.value !== null) salaryField(state.editedSide).value = amount(state.value, state[state.editedSide], locale());
   fetchRate();
 }
 
@@ -251,16 +284,32 @@ for (const side of ["source", "target"]) {
 
 document.addEventListener("pointerdown", event => { if (openSide && !event.target.closest(`[data-side="${openSide}"]`)) closeMenu(); });
 document.addEventListener("focusin", event => { if (openSide && !event.target.closest(`[data-side="${openSide}"]`)) closeMenu(); });
-$("salary").addEventListener("input", event => { state.value = parseAmount(event.target.value, locale()); render(); });
-$("salary").addEventListener("blur", () => { if (state.value !== null) $("salary").value = amount(state.value, state.source, locale()); });
+for (const side of ["source", "target"]) {
+  salaryField(side).addEventListener("input", event => { state.editedSide = side; state.value = parseAmount(event.target.value, locale()); render(); });
+  salaryField(side).addEventListener("blur", () => { if (state.editedSide === side && state.value !== null) salaryField(side).value = amount(state.value, state[side], locale()); });
+}
+$("hours-per-week").addEventListener("input", event => {
+  const value = parseAmount(event.target.value, locale());
+  state.hoursPerWeek = value > 0 && value * 52 <= Number.MAX_SAFE_INTEGER ? value : null;
+  render();
+});
+$("hours-per-week").addEventListener("blur", () => { if (state.hoursPerWeek !== null) $("hours-per-week").value = formatRate(state.hoursPerWeek); });
 $("manual-rate").addEventListener("input", event => { const value = parseAmount(event.target.value, locale()); state.manual = value > 0 ? value : null; render(); });
 $("manual-rate").addEventListener("blur", () => { if (state.manual !== null) $("manual-rate").value = formatRate(state.manual); });
-document.querySelectorAll("[data-period]").forEach(button => button.addEventListener("click", () => {
-  state.value = changePeriod(state.value, state.period, button.dataset.period, state.sourcePayments);
-  state.period = button.dataset.period;
-  if (state.value !== null) $("salary").value = amount(state.value, state.source, locale());
-  render();
-}));
+for (const side of ["source", "target"]) {
+  $(`${side === "source" ? "period" : "target-period"}-control`).querySelectorAll("[data-period]").forEach(button => button.addEventListener("click", () => {
+    if (state.hoursPerWeek === null) return;
+    const previous = periodFor(side);
+    if (side === state.editedSide) {
+      const converted = changePeriod(state.value, previous, button.dataset.period, state[`${side}Payments`], state.hoursPerWeek);
+      if (state.value !== null && converted === null) return;
+      state.value = converted;
+      if (state.value !== null) salaryField(side).value = amount(state.value, state[side], locale());
+    }
+    state[side === "source" ? "period" : "targetPeriod"] = button.dataset.period;
+    render();
+  }));
+}
 document.querySelectorAll("[data-mode]").forEach(button => button.addEventListener("click", () => {
   if (state.mode === button.dataset.mode) return;
   state.mode = button.dataset.mode;

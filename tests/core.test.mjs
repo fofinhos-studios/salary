@@ -18,6 +18,37 @@ test("annual and monthly inputs preserve the annual total across all 12/13 combi
   assert.equal(amount(calculate(120000, "annual", 12, 13, 5).monthly, "BRL", "pt-BR"), "46.153,85");
 });
 
+test("editing either side recovers the original amount for independent periods", () => {
+  for (const sourcePeriod of ["hourly", "monthly", "annual"]) {
+    for (const targetPeriod of ["monthly", "annual"]) {
+      for (const sourcePayments of [12, 13]) {
+        for (const targetPayments of [12, 13]) {
+          for (const rate of [1, 2.5]) {
+            const forward = calculate(1234.56, sourcePeriod, sourcePayments, targetPayments, rate, 37.5);
+            const reverse = calculate(forward[targetPeriod], targetPeriod, targetPayments, sourcePayments, 1 / rate, 37.5);
+            assert.ok(Math.abs(reverse[sourcePeriod] - 1234.56) < 1e-8);
+          }
+        }
+      }
+    }
+  }
+});
+
+test("hourly pay uses weekly hours and ignores source 13th payment", () => {
+  for (const sourcePayments of [12, 13]) {
+    for (const targetPayments of [12, 13]) {
+      const result = calculate(25, "hourly", sourcePayments, targetPayments, 2, 37.5);
+      assert.equal(result.sourceAnnual, 48750);
+      assert.equal(result.annual, 97500);
+      assert.equal(result.monthly, 97500 / targetPayments);
+      assert.equal(result.hourly, 50);
+    }
+  }
+  assert.equal(calculate(120000, "annual", 12, 12, 1, 40).hourly, 120000 / 2080);
+  assert.equal(calculate(120000, "annual", 12, 12, 1, 30).annual, 120000);
+  assert.equal(calculate(120000, "annual", 12, 12, 1, 30).hourly, 120000 / 1560);
+});
+
 test("switching periods keeps full precision instead of reusing formatted values", () => {
   let value = 120000;
   for (let i = 0; i < 100; i++) {
@@ -26,12 +57,21 @@ test("switching periods keeps full precision instead of reusing formatted values
   }
   assert.ok(Math.abs(value - 120000) < 1e-8);
   assert.equal(changePeriod(null, "annual", "monthly", 12), null);
+  value = 120000;
+  for (let i = 0; i < 100; i++) {
+    value = changePeriod(value, "annual", "hourly", 13, 37.5);
+    value = changePeriod(value, "hourly", "monthly", 13, 37.5);
+    value = changePeriod(value, "monthly", "annual", 13, 37.5);
+  }
+  assert.ok(Math.abs(value - 120000) < 1e-8);
+  assert.equal(changePeriod(Number.MAX_SAFE_INTEGER, "hourly", "annual", 12, 40), null);
+  assert.equal(changePeriod(120000, "annual", "hourly", 12, 1e-13), null);
 });
 
 test("manual rates, identity rates and zero salary", () => {
-  assert.deepEqual(calculate(1000, "monthly", 13, 12, 2.5), { sourceAnnual: 13000, annual: 32500, monthly: 32500 / 12 });
+  assert.deepEqual(calculate(1000, "monthly", 13, 12, 2.5), { sourceAnnual: 13000, annual: 32500, monthly: 32500 / 12, hourly: 32500 / 2080 });
   assert.equal(calculate(1000, "monthly", 12, 12, 1).monthly, 1000);
-  assert.deepEqual(calculate(0, "annual", 12, 13, 5), { sourceAnnual: 0, annual: 0, monthly: 0 });
+  assert.deepEqual(calculate(0, "annual", 12, 13, 5), { sourceAnnual: 0, annual: 0, monthly: 0, hourly: 0 });
 });
 
 test("locale parsing accepts decimals and grouping without guessing ambiguous inputs", () => {
@@ -53,6 +93,10 @@ test("invalid inputs and overflow never become a displayed result", () => {
   for (const value of [null, undefined, NaN, Infinity, -1]) assert.equal(calculate(value, "annual", 12, 12, 5), null);
   for (const rate of [null, undefined, NaN, Infinity, 0, -1]) assert.equal(calculate(120000, "annual", 12, 12, rate), null);
   assert.equal(calculate(Number.MAX_SAFE_INTEGER, "annual", 12, 12, 2), null);
+  for (const hours of [null, NaN, Infinity, 0, -1, Number.MAX_SAFE_INTEGER]) {
+    assert.equal(calculate(25, "hourly", 12, 12, 1, hours), null);
+  }
+  assert.equal(calculate(Number.MAX_SAFE_INTEGER, "hourly", 12, 12, 1, 40), null);
   assert.equal(calculate(10, "weekly", 12, 12, 1), null);
 });
 
