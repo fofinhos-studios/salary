@@ -87,13 +87,17 @@ test("same-currency salaries update live, including 13 payments and different ho
   assert.match(el("compare-announcement").textContent, /Salary comparison/);
 });
 
-test("same-currency selector stays linked and the toggle enables independent currencies", async () => {
+test("currency selectors change independently and the toggle can explicitly match them", async () => {
   const { fetch } = await mount();
   click("#tab-compare");
   select("a", "BRL");
-  assert.equal(el("compare-b-selection").querySelector("strong").textContent, "BRL");
-  assert.equal(fetch.mock.calls.filter(([url]) => String(url).includes("/api/rate")).length, 1);
-  click('[data-compare-currency-mode="different"]');
+  await settle();
+  assert.equal(el("compare-b-selection").querySelector("strong").textContent, "USD");
+  assert.equal(document.querySelector('[data-compare-currency-mode="different"]').getAttribute("aria-pressed"), "true");
+  assert.equal(fetch.mock.calls.filter(([url]) => String(url).includes("/api/rate")).length, 2);
+  select("b", "BRL");
+  assert.equal(el("compare-a-selection").querySelector("strong").textContent, "BRL");
+  assert.equal(document.querySelector('[data-compare-currency-mode="same"]').getAttribute("aria-pressed"), "true");
   select("b", "USD");
   await settle();
   assert.match(el("compare-rate-display").textContent, /0\.2 USD/);
@@ -230,13 +234,13 @@ test("monthly payment direction can differ from annual direction", async () => {
   assert.match(el("compare-monthly").textContent, /-USD\s+307\.69/);
 });
 
-test("currency menu supports both linked directions, pointer selection, and dismissal", async () => {
+test("currency menu changes only the chosen side and supports pointer and keyboard dismissal", async () => {
   await mount();
   click("#tab-compare");
   click("#compare-b-currency");
   input("compare-b-search", "BRL");
   click("#compare-b-options [data-index]");
-  assert.equal(el("compare-a-selection").querySelector("strong").textContent, "BRL");
+  assert.equal(el("compare-a-selection").querySelector("strong").textContent, "USD");
   click("#compare-b-currency");
   assert.equal(el("compare-b-menu").hidden, false);
   click("#compare-b-currency");

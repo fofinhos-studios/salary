@@ -249,12 +249,12 @@ export function mountCompare(getLanguage: () => Language, getCurrencies: () => C
     const selected = visibleCurrencies[index];
     if (!selected || !openSide) return;
     const side = openSide;
-    const changed = offers[side].currency !== selected.code || currencyMode === "same" && offers[side === "a" ? "b" : "a"].currency !== selected.code;
+    const changed = offers[side].currency !== selected.code;
     offers[side].currency = selected.code;
-    if (currencyMode === "same") offers[side === "a" ? "b" : "a"].currency = selected.code;
     closeMenu(true);
     if (!changed) return;
-    for (const current of ["a", "b"] as const) if (offers[current].value !== null) field(current).value = amount(offers[current].value, offers[current].currency, locale());
+    currencyMode = offers.a.currency === offers.b.currency ? "same" : "different";
+    if (offers[side].value !== null) field(side).value = amount(offers[side].value, offers[side].currency, locale());
     rateState.mode = "auto";
     rateState.manual = null;
     $<HTMLInputElement>("compare-manual-rate").value = "";
