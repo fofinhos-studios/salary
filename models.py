@@ -87,7 +87,7 @@ class TaxRules(BaseModel):
     year: Literal[2026]
     valid_from: str
     checked_at: str
-    source: Literal["official_snapshot", "official_snapshot_with_api"]
+    source: Literal["official_snapshot", "official_snapshot_inss_verified"]
     inss_employee: list[tuple[float, float]]
     inss_ceiling: float
     minimum_wage: float

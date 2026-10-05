@@ -17,6 +17,8 @@ result = subprocess.run(
         "--cov=models",
         "--cov=app",
         "--cov=api.index",
+        "--cov=br_rate",
+        "--cov=tax_rules",
         "--cov-branch",
         "--cov-report=term-missing",
         f"--cov-report=json:{REPORT}",

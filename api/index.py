@@ -4,9 +4,9 @@ import json
 from collections.abc import Awaitable, Callable, Mapping
 from urllib.parse import parse_qs
 
+from br_rate import get_brl_rate
 from exchange import dispatch
 from models import ErrorResponse
-from br_rate import get_brl_rate
 from tax_rules import get_tax_rules
 
 

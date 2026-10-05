@@ -30,7 +30,10 @@ def _read_ptax(code: str) -> list[Bulletin]:
         "@dataFinalCotacao": f"'{today:%m-%d-%Y}'",
         "$format": "json",
     }
-    path = "CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)"
+    path = (
+        "CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,"
+        "dataFinalCotacao=@dataFinalCotacao)"
+    )
     url = API + path + "?" + urlencode(params)
     with urlopen(Request(url, headers={"User-Agent": "TinySalary/0.1"}), timeout=5) as response:
         raw = response.read(100_001)
@@ -46,16 +49,29 @@ async def get_brl_rate(base: str) -> Rate:
     if len(base) != 3 or not base.isascii() or not base.isupper() or not base.isalpha():
         raise ValueError("invalid_currency")
     if base == "BRL":
-        return Rate(base="BRL", quote="BRL", rate=1, date=None,
-                    source="identity", stale=False, max_age=86400)
+        return Rate(
+            base="BRL",
+            quote="BRL",
+            rate=1,
+            date=None,
+            source="identity",
+            stale=False,
+            max_age=86400,
+        )
     try:
         rows = await asyncio.wait_for(asyncio.to_thread(_read_ptax, base), timeout=6)
         closing = [row for row in rows if row.tipoBoletim == "Fechamento"]
         if closing:
             latest = max(closing, key=lambda row: row.dataHoraCotacao)
-            return Rate(base=base, quote="BRL", rate=latest.cotacaoCompra,
-                        date=latest.dataHoraCotacao[:10], source="BCB", stale=False,
-                        max_age=3600)
+            return Rate(
+                base=base,
+                quote="BRL",
+                rate=latest.cotacaoCompra,
+                date=latest.dataHoraCotacao[:10],
+                source="BCB",
+                stale=False,
+                max_age=3600,
+            )
     except (TimeoutError, OSError, ValueError, json.JSONDecodeError):
         pass
     return await get_rate(base, "BRL")
