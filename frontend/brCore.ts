@@ -31,6 +31,13 @@ const SIMPLES_III = [[180000, .06, 0], [360000, .112, 9360], [720000, .135, 1764
   [1800000, .16, 35640], [3600000, .21, 125640], [4800000, .33, 648000]] as const;
 const SIMPLES_V = [[180000, .155, 0], [360000, .18, 4500], [720000, .195, 9900],
   [1800000, .205, 17100], [3600000, .23, 62100], [4800000, .305, 540000]] as const;
+// Cofins, PIS/Pasep, ISS and the PIS/Cofins share of ISS above the 5% ceiling.
+const EXPORT_III = [[.1282, .0278, .335, 0], [.1405, .0305, .32, 0],
+  [.1364, .0296, .325, 0], [.1364, .0296, .325, 0],
+  [.1282, .0278, .335, .2346], [.1603, .0347, 0, 0]] as const;
+const EXPORT_V = [[.141, .0305, .14, 0], [.141, .0305, .17, 0],
+  [.1492, .0323, .19, 0], [.1574, .0341, .21, 0],
+  [.141, .0305, .235, .2242], [.1644, .0356, 0, 0]] as const;
 
 export function progressive(base: number, table: [number, number, number][]): number {
   if (base <= 0) return 0;
@@ -121,12 +128,22 @@ function pj(input: Inputs, rules: TaxRules): Result {
     const payroll12 = input.previousPayroll || proLabore * 12;
     factorR = rbt12 > 0 ? payroll12 / rbt12 : null;
     if (rbt12 > 4800000) warnings.push("simples_limit");
+    if (rbt12 > 3600000 && !input.exportServices) warnings.push("simples_sublimit");
     const table = factorR !== null && factorR >= .28 ? SIMPLES_III : SIMPLES_V;
     annex = table === SIMPLES_III ? "III" : "V";
-    const [, nominal, deduction] = table.find(([limit]) => rbt12 <= limit) ?? table.at(-1)!;
+    const selected = table.findIndex(([limit]) => rbt12 <= limit);
+    const bracket = selected < 0 ? table.length - 1 : selected;
+    const [, nominal, deduction] = table[bracket] ?? table.at(-1)!;
     const effective = rbt12 > 0 ? (rbt12 * nominal - deduction) / rbt12 : nominal;
-    corporateTax = pct(gross, effective);
-    if (input.exportServices) warnings.push("export_allocation_required");
+    if (input.exportServices) {
+      const [cofins, pis, iss, redistributed] = (annex === "III" ? EXPORT_III : EXPORT_V)[bracket]!;
+      const issNominal = effective * iss;
+      const excessIss = Math.max(0, issNominal - .05);
+      const exempt = effective * (cofins + pis) + Math.min(issNominal, .05)
+        + excessIss * redistributed;
+      corporateTax = pct(gross, Math.max(0, effective - exempt));
+      warnings.push("export_eligibility");
+    } else corporateTax = pct(gross, effective);
     if (!input.previousRevenue) warnings.push("projected_rbt12");
   } else {
     const quarterly = gross / 4;
@@ -137,6 +154,7 @@ function pj(input: Inputs, rules: TaxRules): Result {
     const iss = input.exportServices ? 0 : pct(gross, input.issRate);
     const employerInss = pct(proLabore * 12, .20);
     corporateTax = sum([(irpj + csll) * 4, contributions, iss, employerInss]);
+    if (input.exportServices) warnings.push("export_eligibility");
     if (!input.exportServices && input.issRate === 0) warnings.push("iss_required");
     if (gross > 5000000) warnings.push("presumed_high_revenue");
   }

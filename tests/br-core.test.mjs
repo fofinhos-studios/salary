@@ -80,7 +80,8 @@ test("unsupported fiscal boundaries produce specific warnings instead of false c
   const tooLarge = compareBrazil({ ...base, previousRevenue: 4800001 }, rules);
   assert.ok(tooLarge.pj.warnings.includes("simples_limit"));
   const exported = compareBrazil({ ...base, exportServices: true }, rules);
-  assert.ok(exported.pj.warnings.includes("export_allocation_required"));
+  assert.ok(exported.pj.warnings.includes("export_eligibility"));
+  assert.ok(exported.pj.corporateTax < projected.pj.corporateTax);
   const deficit = compareBrazil({ ...base, proLaboreMonthly: 20000 }, rules);
   assert.ok(deficit.pj.warnings.includes("company_deficit"));
   const highIncome = compareBrazil({ ...base, otherExemptAnnual: 600000 }, rules);
@@ -105,4 +106,12 @@ test("tax functions handle zero, partial brackets and the annual reduction ramp"
   assert.ok(irMonthly(6000, 0, rules) > 0);
   assert.ok(irAnnual(70000, 0, rules) > 0);
   assert.ok(irAnnual(90000, 0, rules) > irAnnual(70000, 0, rules));
+});
+
+test("qualifying Simples exports remove only the Annex III/V tax shares", () => {
+  const iii = compareBrazil({ ...base, exportServices: true }, rules);
+  const v = compareBrazil({ ...base, previousPayroll: 47039.99, exportServices: true }, rules);
+  assert.equal(iii.pj.corporateTax, 5130.72);
+  assert.equal(v.pj.corporateTax, 17928.54);
+  assert.ok(v.pj.corporateTax > iii.pj.corporateTax);
 });
