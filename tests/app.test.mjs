@@ -308,7 +308,26 @@ test("target period and payment schedule update equivalent", async () => {
   click('#target-period-control [data-period="monthly"]');
   assert.match(el("target-salary").value, /46,153/);
   click('#target-period-control [data-period="hourly"]');
-  assert.equal(el("hourly-result").hidden, true);
+  assert.match(el("target-equivalent").textContent, /\/ month$/);
+  assert.match(el("target-secondary-equivalent").textContent, /\/ year$/);
+});
+
+test("both salary fields show the other two periods below the selected one", async () => {
+  await mount();
+  input("salary", "120000");
+  for (const [period, first, second] of [
+    ["hourly", "month", "year"],
+    ["monthly", "hour", "year"],
+    ["annual", "hour", "month"],
+  ]) {
+    for (const [side, control] of [["source", "period-control"], ["target", "target-period-control"]]) {
+      click(`#${control} [data-period="${period}"]`);
+      assert.match(el(`${side}-equivalent`).textContent, new RegExp(`/ ${first}$`));
+      assert.match(el(`${side}-secondary-equivalent`).textContent, new RegExp(`/ ${second}$`));
+      assert.notEqual(el(`${side}-equivalent`).textContent[0], "—");
+      assert.notEqual(el(`${side}-secondary-equivalent`).textContent[0], "—");
+    }
+  }
 });
 
 test("currency menu supports arrows, escape, click and empty search", async () => {

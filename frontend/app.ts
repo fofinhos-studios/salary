@@ -117,12 +117,12 @@ function render(): void {
       salaryField(current).value = value === undefined ? "" : amount(value, state[current], locale());
     }
   }
-  const targetOther = state.targetPeriod === "annual" ? target?.monthly : target?.annual;
-  $("target-equivalent").textContent = `${targetOther !== undefined ? money(targetOther, state.target, locale()) : "—"} ${t(state.targetPeriod === "annual" ? "perMonth" : "perYear")}`;
-  $("hourly-result").textContent = `${target ? money(target.hourly, state.target, locale()) : "—"} ${t("perHour")}`;
-  $("hourly-result").hidden = state.targetPeriod === "hourly";
-  const other = state.period === "annual" ? source?.monthly : source?.annual;
-  $("source-equivalent").textContent = `${other !== undefined ? money(other, state.source, locale()) : "—"} ${t(state.period === "annual" ? "perMonth" : "perYear")}`;
+  for (const current of ["source", "target"] as const) {
+    (["hourly", "monthly", "annual"] as const).filter(period => period !== periodFor(current)).forEach((period, index) => {
+      const value = values[current]?.[period];
+      $(`${current}-${index === 0 ? "equivalent" : "secondary-equivalent"}`).textContent = `${value !== undefined ? money(value, state[current], locale()) : "—"} ${t(period === "hourly" ? "perHour" : period === "monthly" ? "perMonth" : "perYear")}`;
+    });
+  }
   for (const current of ["source", "target"] as const) {
     $(`${current}-payments`).textContent = t(periodFor(current) === "hourly" ? "hourlyNoThirteenth" : state[`${current}Payments`] === 13 ? "payments13" : "payments12");
     $<HTMLInputElement>(`${current}-thirteenth`).disabled = periodFor(current) === "hourly";

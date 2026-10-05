@@ -47,9 +47,10 @@
               </div>
             </div>
             <div class="salary-heading"><label for="salary" class="label icon-label"><i class="ph ph-coins" aria-hidden="true"></i><span data-i18n="salaryLabel">Amount</span></label><div class="segmented" role="group" id="period-control" aria-label="Salary period"><button type="button" data-period="hourly" aria-pressed="false" data-i18n="hourly">Hourly</button><button type="button" data-period="monthly" aria-pressed="false" data-i18n="monthly">Monthly</button><button type="button" data-period="annual" aria-pressed="true" data-i18n="annual">Annual</button></div></div>
-            <div class="salary-input"><span id="input-code" aria-hidden="true">USD</span><input id="salary" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0" maxlength="30" aria-describedby="salary-error source-equivalent"></div>
+            <div class="salary-input"><span id="input-code" aria-hidden="true">USD</span><input id="salary" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0" maxlength="30" aria-describedby="salary-error source-equivalent source-secondary-equivalent"></div>
             <p id="salary-error" class="error" hidden></p>
-            <p class="equivalent mono" id="source-equivalent">— / month</p>
+            <p class="equivalent mono" id="source-equivalent">— / hour</p>
+            <p class="equivalent mono" id="source-secondary-equivalent">— / month</p>
             <div class="hours-field"><label for="hours-per-week" class="label icon-label"><i class="ph ph-clock" aria-hidden="true"></i><span data-i18n="hoursPerWeek">Hours per week</span></label><input id="hours-per-week" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" maxlength="30" value="40" aria-describedby="hours-error"><p id="hours-error" class="error" hidden></p></div>
             <div class="payment-field"><label class="check"><input id="source-thirteenth" type="checkbox"><i class="ph ph-calendar-blank" aria-hidden="true"></i><span data-i18n="thirteenth">Include 13th payment</span></label><p class="hint" id="source-payments">12 payments/year</p></div>
           </section>
@@ -69,10 +70,10 @@
               </div>
             </div>
             <div class="result-heading"><label for="target-salary" class="label icon-label"><i class="ph ph-equals" aria-hidden="true"></i><span data-i18n="targetAmount">Equivalent amount</span></label><div class="segmented" role="group" id="target-period-control" aria-label="Equivalent period"><button type="button" data-period="hourly" aria-pressed="false" data-i18n="hourly">Hourly</button><button type="button" data-period="monthly" aria-pressed="true" data-i18n="monthly">Monthly</button><button type="button" data-period="annual" aria-pressed="false" data-i18n="annual">Annual</button></div></div>
-            <div class="salary-input"><span id="result-code" aria-hidden="true">BRL</span><input id="target-salary" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0" maxlength="30" aria-describedby="target-error target-equivalent hourly-result"></div>
+            <div class="salary-input"><span id="result-code" aria-hidden="true">BRL</span><input id="target-salary" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0" maxlength="30" aria-describedby="target-error target-equivalent target-secondary-equivalent"></div>
             <p id="target-error" class="error" hidden></p>
-            <p class="equivalent mono" id="target-equivalent">— / year</p>
-            <p class="equivalent mono" id="hourly-result">— / hour</p>
+            <p class="equivalent mono" id="target-equivalent">— / hour</p>
+            <p class="equivalent mono" id="target-secondary-equivalent">— / year</p>
             <div class="payment-field"><label class="check"><input id="target-thirteenth" type="checkbox"><i class="ph ph-calendar-blank" aria-hidden="true"></i><span data-i18n="thirteenth">Include 13th payment</span></label><p class="hint" id="target-payments">12 payments/year</p></div>
           </section>
         </div>
