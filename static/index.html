@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Compare monthly and annual salaries across currencies. Daily exchange rates, manual rates, and optional 13th payments.">
+    <meta name="theme-color" content="#ffffff">
+    <title>tiny salary · salary & currency calculator</title>
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="preload" href="/static/fonts/ClashGrotesk-Variable.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/static/style.css">
+    <script type="module" src="/static/app.mjs"></script>
+  </head>
+  <body>
+    <a class="skip" href="#salary" data-i18n="skip">Skip to calculator</a>
+    <div class="page">
+      <header class="header">
+        <a class="brand" href="/" aria-label="Tiny Salary">
+          <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M0 0h48v48H0z"/><path d="M11 17h26m-7-7 7 7-7 7M37 31H11m7-7-7 7 7 7" fill="none" stroke="white" stroke-width="3"/></svg>
+          <h1>tiny salary</h1>
+        </a>
+        <p class="tagline" data-i18n="tagline">salary & currency<br>calculator</p>
+        <label class="language"><span class="sr-only" data-i18n="language">Language</span><select id="language"><option value="pt">PT</option><option value="en">EN</option></select></label>
+      </header>
+
+      <main id="calculator">
+        <noscript><p class="notice">Enable JavaScript to use the calculator. Ative o JavaScript para usar a calculadora.</p></noscript>
+        <div class="calculator">
+          <section class="panel origin" aria-labelledby="source-title">
+            <div class="panel-heading"><h2 id="source-title" data-i18n="sourceTitle">Your salary</h2><span class="direction" aria-hidden="true">↗</span></div>
+            <div class="field currency-field" data-side="source">
+              <label id="source-currency-label" class="label" data-i18n="sourceCurrency">From currency</label>
+              <button type="button" class="currency-trigger" id="source-currency" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="source-currency-label source-selection">
+                <img id="source-flag" src="/static/flags/us.svg" alt="" width="28" height="21"><span id="source-selection" class="selection"><strong>USD</strong><span id="source-name">US Dollar</span></span><span class="chevron" aria-hidden="true">⌄</span>
+              </button>
+              <div class="currency-menu" id="source-menu" hidden>
+                <input id="source-search" class="currency-search" type="search" role="combobox" aria-expanded="false" aria-controls="source-options" aria-autocomplete="list" autocomplete="off" spellcheck="false">
+                <div id="source-options" class="currency-options" role="listbox" aria-labelledby="source-currency-label"></div>
+                <p class="empty-search" hidden data-i18n="noCurrencies">No currencies found.</p>
+              </div>
+            </div>
+            <div class="salary-heading"><label for="salary" class="label" data-i18n="salaryLabel">Salary amount</label><div class="segmented" role="group" id="period-control" aria-label="Salary period"><button type="button" data-period="monthly" aria-pressed="false" data-i18n="monthly">Monthly</button><button type="button" data-period="annual" aria-pressed="true" data-i18n="annual">Annual</button></div></div>
+            <div class="salary-input"><span id="input-code" aria-hidden="true">USD</span><input id="salary" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" placeholder="0" maxlength="30" aria-describedby="salary-error source-equivalent"></div>
+            <p id="salary-error" class="error" hidden></p>
+            <p class="equivalent mono" id="source-equivalent">— / month</p>
+            <div class="payment-field"><label class="check"><input id="source-thirteenth" type="checkbox"><span data-i18n="thirteenth">Include 13th payment</span></label><p class="hint" id="source-payments">12 payments per year</p></div>
+          </section>
+
+          <section class="panel destination" aria-labelledby="target-title">
+            <div class="panel-heading"><h2 id="target-title" data-i18n="targetTitle">Your equivalent</h2><span class="direction" aria-hidden="true">↙</span></div>
+            <div class="field currency-field" data-side="target">
+              <label id="target-currency-label" class="label" data-i18n="targetCurrency">To currency</label>
+              <button type="button" class="currency-trigger" id="target-currency" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="target-currency-label target-selection">
+                <img id="target-flag" src="/static/flags/br.svg" alt="" width="28" height="21"><span id="target-selection" class="selection"><strong>BRL</strong><span id="target-name">Brazilian Real</span></span><span class="chevron" aria-hidden="true">⌄</span>
+              </button>
+              <div class="currency-menu" id="target-menu" hidden>
+                <input id="target-search" class="currency-search" type="search" role="combobox" aria-expanded="false" aria-controls="target-options" aria-autocomplete="list" autocomplete="off" spellcheck="false">
+                <div id="target-options" class="currency-options" role="listbox" aria-labelledby="target-currency-label"></div>
+                <p class="empty-search" hidden data-i18n="noCurrencies">No currencies found.</p>
+              </div>
+            </div>
+            <div class="result-heading"><span class="label" data-i18n="monthlyEquivalent">Monthly equivalent</span><span id="result-code" class="mono">BRL</span></div>
+            <output id="monthly-result" class="monthly-result" aria-live="off" for="salary source-thirteenth target-thirteenth">—</output>
+            <p class="equivalent mono" id="annual-result">— / year</p>
+            <div class="payment-field"><label class="check"><input id="target-thirteenth" type="checkbox"><span data-i18n="thirteenth">Include 13th payment</span></label><p class="hint" id="target-payments">12 payments per year</p></div>
+          </section>
+        </div>
+
+        <section class="exchange" aria-labelledby="exchange-title">
+          <div class="exchange-top"><h2 id="exchange-title" class="label" data-i18n="exchangeTitle">Exchange rate</h2><div class="segmented" role="group" id="mode-control" aria-label="Exchange rate mode"><button type="button" data-mode="auto" aria-pressed="true" data-i18n="automatic">Automatic</button><button type="button" data-mode="manual" aria-pressed="false" data-i18n="manual">Manual</button></div></div>
+          <div class="exchange-bottom"><div class="rate-summary"><p id="rate-display" class="mono rate-display">USD → BRL</p><p id="rate-detail" class="hint">Loading exchange rate…</p></div><button id="retry-rate" type="button" class="text-button" hidden data-i18n="retry">Try again ↗</button><a class="provider-link" href="https://frankfurter.dev/" target="_blank" rel="noreferrer">Frankfurter ↗</a></div>
+          <div id="manual-field" class="manual-field" hidden><label class="label" for="manual-rate" id="manual-label">BRL per 1 USD</label><input id="manual-rate" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" maxlength="30" aria-describedby="manual-error"><p id="manual-error" class="error" hidden></p></div>
+        </section>
+        <p id="catalogue-error" class="catalogue-error" hidden><span data-i18n="catalogueError">Currency list unavailable. The initial pair still works with a manual rate.</span> <button type="button" id="retry-currencies" class="text-button" data-i18n="retry">Try again ↗</button></p>
+        <p class="calculation-note" data-i18n="calculationNote">A simple salary comparison. Before taxes, benefits and transfer fees.</p>
+        <p id="announcement" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+      </main>
+
+      <footer><span>Made with love by 🧡💜 <a href="https://fofinhos.studio/" target="_blank" rel="noreferrer">fofinhos.studio</a></span><a href="https://github.com/felipecustodio/tiny-salary" target="_blank" rel="noreferrer" aria-label="Tiny Salary on GitHub">GitHub ↗</a></footer>
+    </div>
+  </body>
+</html>
