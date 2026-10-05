@@ -16,3 +16,4 @@
 .destination .salary-input{background:transparent}
 input[type=text]:focus-visible,input[type=search]:focus-visible{border-color:transparent;outline-offset:0}
 @media(max-width:699px){.brand-subtitle{display:none}}
+@media(min-width:700px){.panel{display:flex;flex-direction:column}.payment-field{margin-top:auto}.hours-field{margin-bottom:16px}}
