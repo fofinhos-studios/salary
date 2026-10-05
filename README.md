@@ -24,7 +24,24 @@ uv run app.py
 ```
 
 On macOS/Linux: `PORT=9000 uv run app.py`. Keep the default loopback host for local use.
-Deployment, TLS and reverse-proxy configuration are outside this local release.
+
+## Deploy to Vercel
+
+```sh
+vercel link
+vercel --prod
+```
+
+`vercel.json` serves `static/` through the CDN and routes the two API endpoints to
+`api/index.py`, a small ASGI entry point. Both it and the local Robyn server reuse
+`exchange.py`. No secrets or environment variables are required.
+
+Production domain: **https://salary.fofinhos.studio**. Add the domain to the Vercel
+project, then use the CNAME target returned by `vercel domains inspect` in Cloudflare
+with **DNS only** (proxy disabled). Vercel provisions the HTTPS certificate.
+
+The in-memory cache belongs to each warm function instance. Cold starts lose cached
+rates; without a successful cached response, provider outages offer manual entry.
 
 ## Calculation
 

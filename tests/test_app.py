@@ -1,9 +1,8 @@
-import json
 import time
 import unittest
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, patch
 
-import app
+import exchange as app
 
 SAMPLE = {"base": "USD", "quote": "BRL", "rate": 5.0, "date": "2026-10-02"}
 CURRENCIES: list[app.Currency] = [
@@ -94,16 +93,14 @@ class ExchangeTests(unittest.IsolatedAsyncioTestCase):
                 await app.fetch_json("/rate/USD/BRL")
 
     async def test_endpoints_return_explicit_errors(self):
-        request = Mock(spec=app.Request)
-        request.query_params = {"base": "USD", "quote": "BRL"}
         with patch.object(app, "get_rate", AsyncMock(side_effect=ValueError)):
-            response = await app.rate_endpoint(request)
-            self.assertEqual(response.status_code, 400)
-            self.assertEqual(json.loads(response.description)["error"], "invalid_currency")
+            payload, status = await app.dispatch("rate", "USD", "BRL")
+            self.assertEqual(status, 400)
+            self.assertEqual(payload, {"error": "invalid_currency"})
         with patch.object(app, "get_rate", AsyncMock(side_effect=app.ProviderError)):
-            self.assertEqual((await app.rate_endpoint(request)).status_code, 503)
+            self.assertEqual((await app.dispatch("rate", "USD", "BRL"))[1], 503)
         with patch.object(app, "get_currencies", AsyncMock(side_effect=app.ProviderError)):
-            self.assertEqual((await app.currencies_endpoint()).status_code, 503)
+            self.assertEqual((await app.dispatch("currencies"))[1], 503)
 
 
 if __name__ == "__main__":
