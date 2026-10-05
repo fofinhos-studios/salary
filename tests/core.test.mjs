@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { readFileSync, readdirSync } from "node:fs";
 import { gzipSync } from "node:zlib";
-import { amount, calculate, changePeriod, money, parseAmount, searchKey } from "../static/core.mjs";
+import { amount, calculate, changePeriod, formatSalaryText, money, parseAmount, searchKey } from "../static/core.mjs";
 
 test("annual and monthly inputs preserve the annual total across all 12/13 combinations", () => {
   for (const sourcePayments of [12, 13]) {
@@ -87,6 +87,20 @@ test("locale parsing accepts decimals and grouping without guessing ambiguous in
   }
   assert.equal(parseAmount("1.23", "pt-BR"), null);
   assert.equal(parseAmount("1,23", "en-US"), null);
+});
+
+test("salary formatting groups while typing and keeps the cursor by the edited digit", () => {
+  let text = "", cursor = 0;
+  for (const digit of "235000") {
+    const result = formatSalaryText(text.slice(0, cursor) + digit + text.slice(cursor), cursor + 1, "en-US");
+    ({ text, cursor } = result);
+  }
+  assert.equal(text, "235,000");
+  assert.equal(cursor, text.length);
+  assert.deepEqual(formatSalaryText("12,9345", 4, "en-US"), { text: "129,345", cursor: 3, value: 129345 });
+  assert.deepEqual(formatSalaryText("1234.", 5, "en-US"), { text: "1,234.", cursor: 6, value: 1234 });
+  assert.deepEqual(formatSalaryText("1234,50", 7, "pt-BR"), { text: "1.234,50", cursor: 8, value: 1234.5 });
+  assert.equal(formatSalaryText("bad", 3, "en-US"), null);
 });
 
 test("invalid inputs and overflow never become a displayed result", () => {

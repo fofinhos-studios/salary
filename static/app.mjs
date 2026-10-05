@@ -1,4 +1,4 @@
-import { amount, calculate, changePeriod, money, parseAmount, searchKey } from "./core.mjs";
+import { amount, calculate, changePeriod, formatSalaryText, money, parseAmount, searchKey } from "./core.mjs";
 import { messages } from "./i18n.mjs";
 import { flagFor } from "./flags.mjs";
 
@@ -66,6 +66,16 @@ function renderCurrency(side) {
 
 function formatRate(value) {
   return new Intl.NumberFormat(locale(), { maximumSignificantDigits: 12 }).format(value);
+}
+
+function formatSalaryInput(field) {
+  const result = formatSalaryText(field.value, field.selectionStart ?? field.value.length, locale());
+  if (!result) return null;
+  if (result.text !== field.value) {
+    field.value = result.text;
+    field.setSelectionRange(result.cursor, result.cursor);
+  }
+  return result.value;
 }
 
 function render() {
@@ -285,7 +295,7 @@ for (const side of ["source", "target"]) {
 document.addEventListener("pointerdown", event => { if (openSide && !event.target.closest(`[data-side="${openSide}"]`)) closeMenu(); });
 document.addEventListener("focusin", event => { if (openSide && !event.target.closest(`[data-side="${openSide}"]`)) closeMenu(); });
 for (const side of ["source", "target"]) {
-  salaryField(side).addEventListener("input", event => { state.editedSide = side; state.value = parseAmount(event.target.value, locale()); render(); });
+  salaryField(side).addEventListener("input", event => { state.editedSide = side; state.value = formatSalaryInput(event.target); render(); });
   salaryField(side).addEventListener("blur", () => { if (state.editedSide === side && state.value !== null) salaryField(side).value = amount(state.value, state[side], locale()); });
 }
 $("hours-per-week").addEventListener("input", event => {

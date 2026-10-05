@@ -10,6 +10,20 @@ export function parseAmount(text, locale) {
   return Number.isFinite(number) && number >= 0 && number <= Number.MAX_SAFE_INTEGER ? number : null;
 }
 
+export function formatSalaryText(text, cursor, locale) {
+  const group = locale.startsWith("pt") ? "." : ",";
+  const decimal = locale.startsWith("pt") ? "," : ".";
+  const ungrouped = text.replaceAll(group, "");
+  const value = parseAmount(ungrouped, locale);
+  if (value === null) return null;
+  const [whole, fraction] = ungrouped.split(decimal);
+  const formatted = whole.replace(/\B(?=(\d{3})+(?!\d))/g, group) + (fraction === undefined ? "" : decimal + fraction);
+  const before = text.slice(0, cursor).replaceAll(group, "").length;
+  let position = 0, characters = 0;
+  while (characters < before && position < formatted.length) if (formatted[position++] !== group) characters++;
+  return { text: formatted, cursor: position, value };
+}
+
 export function calculate(value, period, sourcePayments, targetPayments, rate, hoursPerWeek = 40) {
   if (!Number.isFinite(value) || value < 0 || !Number.isFinite(rate) || rate <= 0) return null;
   if (![12, 13].includes(sourcePayments) || ![12, 13].includes(targetPayments)) return null;
